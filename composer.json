@@ -11,5 +11,5 @@
 	"keywords": ["codeigniter", "crud", "faqzul", "model"],
 	"license": "MIT",
 	"name": "faqzul/codeigniter-crud-model",
-	"require": { "php": ">=5.4.8", "CodeIgniter": "3.x" }
+	"require": { "php": ">=5.4.8" }
 }
