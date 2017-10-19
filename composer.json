@@ -1,0 +1,15 @@
+{
+	"authors": [{
+		"name": "Muhammad Faqih Zulfikar",
+		"email": "faqzul@gmail.com",
+		"homepage": "https://github.com/FaqZul",
+		"role": "Developer"
+	}],
+	"autoload": { "classmap": ["models/Crud.php"] },
+	"description": "Create one model for all CodeIgniter controllers.",
+	"homepage": "https://github.com/FaqZul/CodeIgniter-CRUD-Model",
+	"keywords": ["codeigniter", "crud", "faqzul", "model"],
+	"license": "MIT",
+	"name": "faqzul/codeigniter-crud-model",
+	"require": { "php": ">=5.4.8", "CodeIgniter": "3.x" }
+}
