@@ -33,6 +33,7 @@ class Crud extends CI_Model {
 			}
 		}
 		$this->db->where($where);
+		if ($this->delete_record === FALSE) { $this->db->where($from . '_delete_date', NULL); }
 		if ($groupBy !== '') {
 			$this->db->group_by($groupBy);
 		}
