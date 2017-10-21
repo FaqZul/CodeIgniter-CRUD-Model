@@ -10,12 +10,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Crud extends CI_Model {
 
-	/**
-	* Data will be deleted permanently if the value is TRUE;
-	* To save Your data but not to display, set it to FALSE & add the following fields in each table:
-	*	$TableName_delete_date	datetime 	DEFAULT NULL;
-	*	$TableName_delete_ip	varchar(15)	DEFAULT NULL;
-	**/
 	protected $delete_record;
 
 	public function __construct() {
@@ -30,15 +24,22 @@ class Crud extends CI_Model {
 		return $this->db->error();
 	}
 
-	public function readData($select, $from, $where, $joinTable, $groupBy, $order, $orderBy) {
+	public function readData($select, $from, $where, $joinTable, $groupBy, $order, $orderBy, $limit = NULL) {
 		$this->db->select('SQL_CALC_FOUND_ROWS ' . $select, FALSE);
 		$this->db->from($from);
-		$this->db->where($where);
 		if (count($joinTable > 0)) {
-			foreach ($joinTable as $join) { $this->db->join($join['table'], $join['relation'], 'LEFT'); }
+			foreach ($joinTable as $join) {
+				$this->db->join($join['table'], $join['condition'], ( ! isset($join['type'])) ? 'LEFT': $join['type']);
+			}
 		}
-		if ($groupBy !== '') {$this->db->group_by($groupBy); }
+		$this->db->where($where);
+		if ($groupBy !== '') {
+			$this->db->group_by($groupBy);
+		}
 		$this->db->order_by($order, $orderBy);
+		if (is_array($limit)) {
+			$this->db->limit((isset($limit['limit'])) ? $limit['limit']: 10, (isset($limit['offset'])) ? $limit['offset']: 0);
+		}
 		$query = $this->db->get();
 		return $query->result_array();
 	}
