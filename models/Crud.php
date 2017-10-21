@@ -1,10 +1,10 @@
 <?php
 /**
 * @author 		Muhammad Faqih Zulfikar
-* @copyright	Copyright (c) 2017 FaqZul (https://github.com/FaqZul/CodeIgniter-CRUD-Model)
+* @copyright 	Copyright (c) 2017 FaqZul (https://github.com/FaqZul/CodeIgniter-CRUD-Model)
 * @license 		https://opensource.org/licenses/MIT 	MIT License
 * @link 		https://www.facebook.com/DorkSQLi
-* @version 		1.0.0
+* @version 		development
 */
 defined('BASEPATH') or exit('No direct script access allowed');
 
