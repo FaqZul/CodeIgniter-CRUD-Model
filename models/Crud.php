@@ -34,9 +34,7 @@ class Crud extends CI_Model {
 		}
 		$this->db->where($where);
 		if ($this->delete_record === FALSE) { $this->db->where($from . '_delete_date', NULL); }
-		if ($groupBy !== '') {
-			$this->db->group_by($groupBy);
-		}
+		if (trim($groupBy) !== '') { $this->db->group_by($groupBy); }
 		$this->db->order_by($order, $orderBy);
 		if (is_array($limit)) {
 			$this->db->limit((isset($limit['limit'])) ? $limit['limit']: 10, (isset($limit['offset'])) ? $limit['offset']: 0);
