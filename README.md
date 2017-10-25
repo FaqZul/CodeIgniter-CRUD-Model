@@ -136,7 +136,7 @@ class Welcome extends CI_Controller {
 	- code (int).
 	- message (string).
 - Return Type: array.
-> readData($select, $from, $where, $joinTable, $groupBy, $order, $orderBy, $limit)
+> readData($select, $from, $where, $joinTable, $groupBy, $order, $orderBy [, $limit = NULL])
 - Parameters:
 	- $select (string) - The SELECT portion of a query.
 	- $from (mixed) - Table name(s); array or string.
@@ -149,8 +149,8 @@ class Welcome extends CI_Controller {
 	- $order (string) - Field to order by.
 	- $orderBy (string) - The order requested - ASC, DESC or random.
 	- $limit (array) - Associative array.
-		1. Key 'limit' - Number of rows to limit the result to.
-		2. Key 'offset' - Number of rows to skip.
+		1. Key `limit` - Number of rows to limit the result to.
+		2. Key `offset` - Number of rows to skip.
 - Returns: Array containing the fetched rows.
 - Return Type: array.
 > updateData($table, $data, $where)
