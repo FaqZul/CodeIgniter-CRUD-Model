@@ -4,7 +4,7 @@
 * @copyright 	Copyright (c) 2017 FaqZul (https://github.com/FaqZul/CodeIgniter-CRUD-Model)
 * @license 		https://opensource.org/licenses/MIT 	MIT License
 * @link 		https://www.facebook.com/DorkSQLi
-* @version 		development
+* @version 		2.0.0
 */
 defined('BASEPATH') or exit('No direct script access allowed');
 

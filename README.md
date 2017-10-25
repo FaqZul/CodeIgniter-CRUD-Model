@@ -22,6 +22,21 @@ $autoload['model'] = array();
 ↓
 $autoload['model'] = array('Crud');
 ```
+* Add the following line in the `application/config/config.php` file.
+```php
+/*
+|--------------------------------------------------------------------------
+| Configuration Package FaqZul/CodeIgniter-CRUD-Model
+|--------------------------------------------------------------------------
+| Delete Record
+|--------------------------------------------------------------------------
+| Data will be deleted permanently if the value is TRUE;
+| To save Your data but not to display, set it to FALSE & add the following fields in each table:
+| 	$TableName_delete_date	datetime 	DEFAULT NULL;
+| 	$TableName_delete_ip	varchar(15)	DEFAULT NULL;
+*/
+$config['delete_record'] = FALSE;
+```
 * If You use composer, also change the following line in the `application/config/config.php` file.
 ```php
 $config['composer_autoload'] = FALSE;
@@ -59,12 +74,12 @@ class Welcome extends CI_Controller {
 
 	public function __construct() { parent::__construct(); }
 
-	public function list() {
+	public function list($page = 0) {
 		$where = array('id !=' => NULL);
 		$join = array(
-			array('table' => 'user_profiles', 'relation' => 'user_profiles.user_id = users.id')
+			array('table' => 'user_profiles', 'relation' => 'user_profiles.user_id = users.id', 'type' => 'LEFT')
 		);
-		$data = $this->crud->readData('*', 'users', $where, $join, '', 'id', 'DESC');
+		$data = $this->crud->readData('*', 'users', $where, $join, '', 'id', 'DESC', array('limit' => 10, 'offset' => $page * 10));
 		var_dump($data);
 	}
 
@@ -129,6 +144,7 @@ class Welcome extends CI_Controller {
 	- $joinTable (array) - Multidimensional array.
 		1. Key `table` - Table name to join.
 		2. Key `relation` - The JOIN ON condition.
+		3. Key `type` - The JOIN type.
 	- $groupBy (mixed) - Field(s) to group by; array or string.
 	- $order (string) - Field to order by.
 	- $orderBy (string) - The order requested - ASC, DESC or random.

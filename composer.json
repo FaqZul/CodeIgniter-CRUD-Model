@@ -6,7 +6,6 @@
 		"role": "Developer"
 	}],
 	"autoload": { "classmap": ["models/Crud.php"] },
-	"autoload-dev": { "classmap": ["models/Crud.php"] },
 	"description": "Create one model for all CodeIgniter controllers.",
 	"homepage": "https://github.com/FaqZul",
 	"keywords": ["codeigniter", "crud", "faqzul", "model"],
