@@ -89,7 +89,7 @@ class Welcome extends CI_Controller {
 		if (trim($a['message']) === '') {
 			// Success inserting data.
 			$profile = array(
-				'employee_id' => $a['id'],					// it's the same $this->db->insert_id().
+				'employee_id' => $a['id'],	// it's the same $this->db->insert_id().
 				'link' => 'https://github.com/FaqZul'
 			);
 			$this->Crud->createData('profile', $profile);	// Without callback.
@@ -179,7 +179,7 @@ class Welcome extends CI_Controller {
 	- id (int). - [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
 	- message (string).
 - Return Type: array or boolean.
-> readData($select, $from, $where, $joinTable, $groupBy, $order, $orderBy [, $limit = NULL])
+> readData($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $order = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ] ])
 - Parameters:
 	- $select (string) - The SELECT portion of a query.
 	- $from (mixed) - Table name(s); array or string.
