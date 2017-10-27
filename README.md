@@ -28,16 +28,44 @@ $autoload['model'] = array('Crud');
 |--------------------------------------------------------------------------
 | Configuration Package FaqZul/CodeIgniter-CRUD-Model
 |--------------------------------------------------------------------------
-| Delete Record
+| Delete Record (Soft Delete)
 |--------------------------------------------------------------------------
 | Data will be deleted permanently if the value is TRUE;
 | To save Your data but not to display, set it to FALSE & add the following fields in each table:
-| 	$TableName_delete_date	datetime 	DEFAULT NULL;
-| 	$TableName_delete_ip	varchar(15)	DEFAULT NULL;
+| 	[TABLENAME]_delete_date	datetime 	DEFAULT NULL;
+| 	[TABLENAME]_delete_ip	varchar(15)	DEFAULT NULL;
 */
-$config['delete_record'] = FALSE;
+$config['delete_record'] = TRUE;
+/*
+|--------------------------------------------------------------------------
+| Log Query
+|--------------------------------------------------------------------------
+| If the value is TRUE, run the following query in Your database.
+| CREATE TABLE `log` (
+|   `log_id` int(11) NOT NULL AUTO_INCREMENT,
+|   `log_ip` varchar(15) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
+|   `log_query` text CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+|   `log_url` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
+|   `log_datetime` datetime NOT NULL,
+|   PRIMARY KEY (`log_id`) USING BTREE
+| ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Compact;
+*/
+$config['log_query'] = FALSE;
+/*
+|--------------------------------------------------------------------------
+| History Transaction
+|--------------------------------------------------------------------------
+| If the value is TRUE, add the following fields:
+| 1. For inserting data:
+|	[TABLENAME]_create_date	datetime 	DEFAULT NULL;
+|	[TABLENAME]_create_ip	varchar(15)	DEFAULT NULL;
+| 2. For updating data:
+|	[TABLENAME]_update_date	datetime 	DEFAULT NULL;
+|	[TABLENAME]_update_ip	varchar(15)	DEFAULT NULL;
+*/
+$config['track_trans'] = FALSE;
 ```
-* If You use composer, also change the following line in the `application/config/config.php` file.
+* If You use composer, don't forget to change the following lines in the `application/config/config.php` file.
 ```php
 $config['composer_autoload'] = FALSE;
 ↓
@@ -57,9 +85,16 @@ class Welcome extends CI_Controller {
 			'middle_name' => 'Faqih',
 			'last_name' => 'Zulfikar'
 		);
-		$a = $this->Crud->createData('employee', $data);
+		$a = $this->Crud->createData('employee', $data, TRUE);
 		if (trim($a['message']) === '') {
 			// Success inserting data.
+			$profile = array(
+				'employee_id' => $a['id'],					// it's the same $this->db->insert_id().
+				'link' => 'https://github.com/FaqZul'
+			);
+			$this->Crud->createData('profile', $profile);	// Without callback.
+			$id = $this->session->flash_data('insert_id');	// Without callback, You can also get insert_id as well.
+			redirect("profile?id=$id");
 		}
 		else {
 			// Fail inserting data.
@@ -75,12 +110,19 @@ class Welcome extends CI_Controller {
 	public function __construct() { parent::__construct(); }
 
 	public function list($page = 0) {
-		$where = array('id !=' => NULL);
-		$join = array(
-			array('table' => 'user_profiles', 'relation' => 'user_profiles.user_id = users.id', 'type' => 'LEFT')
-		);
-		$data = $this->crud->readData('*', 'users', $where, $join, '', 'id', 'DESC', array('limit' => 10, 'offset' => $page * 10));
-		var_dump($data);
+		$a = $this->Crud->readData('*', 'users')->result();
+		// This method returns the query result as an array of objects, or an empty array on failure. Typically you’ll use this in a foreach loop.
+		// Produces: SELECT * FROM users
+
+		$where = array('username !=' => 'FaqZul');
+		$b = $this->Crud->readData('*', 'users', $where)->row();
+		// This method returns a single result row. If your query has more than one row, it returns only the first row. The result is returned as an object.
+		// Executes: SELECT * FROM users WHERE username != 'FaqZul'
+
+		$join = array('user_profiles' => 'users.id = user_profiles.user_id');
+		$c = $this->Crud->readData('*', 'users', $where, $join, '', 'users.id DESC', array(10, $page * 10))->result_array();
+		// This method returns the query result as a pure array, or an empty array when no result is produced. Typically you’ll use this in a foreach loop.
+		// Executes: SELECT * FROM users JOIN user_profiles ON users.id = user_profiles.user_id WHERE username != 'FaqZul' ORDER BY users.id DESC LIMIT 10
 	}
 
 }
@@ -97,7 +139,7 @@ class Welcome extends CI_Controller {
 			'middle_name' => 'Faqih',
 			'last_name' => 'Zulfikar'
 		);
-		$a = $this->Crud->updateData('employee', $data, array('id' => $id));
+		$a = $this->Crud->updateData('employee', $data, array('id' => $id), TRUE);
 		if (trim($a['message']) === '') {
 			// Success updating data.
 		}
@@ -115,7 +157,7 @@ class Welcome extends CI_Controller {
 	public function __construct() { parent::__construct(); }
 
 	public function delete($id = 0) {
-		$a = $this->Crud->deleteData('employee', array('id' => $id));
+		$a = $this->Crud->deleteData('employee', array('id' => $id), TRUE);
 		if (trim($a['message']) === '') {
 			// Success deleting data.
 		}
@@ -128,14 +170,15 @@ class Welcome extends CI_Controller {
 ```
 
 ## Class Reference
-> createData($table, $data)
+> createData($table, $data [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
 	- $data (array) - An associative array of field/value pairs.
 - Returns:
 	- code (int).
+	- id (int). - [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
 	- message (string).
-- Return Type: array.
+- Return Type: array or boolean.
 > readData($select, $from, $where, $joinTable, $groupBy, $order, $orderBy [, $limit = NULL])
 - Parameters:
 	- $select (string) - The SELECT portion of a query.
