@@ -5,6 +5,7 @@
 		"homepage": "https://www.facebook.com/DorkSQLi",
 		"role": "Developer"
 	}],
+	"autoload-dev": { "classmap": ["application/models/Crud.php"] },
 	"description": "Create one model for all CodeIgniter controllers.",
 	"homepage": "https://github.com/FaqZul",
 	"keywords": ["codeigniter", "crud", "faqzul", "model"],
