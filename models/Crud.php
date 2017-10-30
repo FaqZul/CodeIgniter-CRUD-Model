@@ -29,7 +29,7 @@ class Crud extends CI_Model {
 		$this->db->insert($table, $data);
 		$error = $this->db->error();
 		$insertID = $this->db->insert_id();
-		$error['id'] = $insertID;
+		$error['insert_id'] = $insertID;
 		$this->session->set_flashdata('insert_id', $insertID);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
 		if ($callback) { return $error; }
@@ -54,7 +54,7 @@ class Crud extends CI_Model {
 		if (is_array($groupBy) AND count($groupBy) > 0 AND ! $this->is_array_assoc($groupBy)) { $this->db->group_by($groupBy); }
 		else if (is_string($groupBy) AND trim($groupBy) !== '') { $this->db->group_by($groupBy); }
 		if (is_string($orderBy) AND trim($orderBy) !== '') { $this->db->order_by($orderBy); }
-		if (is_array($limit) AND count($limit) <=2 AND ! $this->is_array_assoc($limit)) {
+		if (is_array($limit) AND count($limit) <= 2 AND ! $this->is_array_assoc($limit)) {
 			if (is_numeric($limit[0]) AND ! empty($limit[1]) AND is_numeric($limit[1])) { $this->db->limit($limit[0], $limit[1]); }
 			else if (is_numeric($limit[0])) { $this->db->limit($limit[0]); }
 		}
