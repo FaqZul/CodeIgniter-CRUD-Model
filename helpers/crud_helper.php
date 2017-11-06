@@ -31,5 +31,5 @@ if ( ! function_exists('display_response')) {
 }
 
 if ( ! function_exists('is_array_assoc')) {
-	function is_array_assoc($array) { return array_keys($array) !== range(0, count($array) - 1); }
+	function is_array_assoc($var) { return is_array($var) && array_diff_key($var, array_keys(array_keys($var))); }
 }
