@@ -6,12 +6,15 @@
 * @link 		https://www.facebook.com/DorkSQLi
 * @package		FaqZul/CodeIgniter-CRUD-Model
 * @subpackage	Models
-* @version 		3.0.0-dev
+* @version 		development
 */
 defined('BASEPATH') or exit('No direct script access allowed');
 
 class Crud extends CI_Model {
 
+	private $_error = array('code' => 0, 'message' => '');
+	private $insert_id_key = NULL;
+	private $insert_id_val = 0;
 	protected $delete_record = TRUE;
 	protected $log_query = FALSE;
 	protected $track_trans = FALSE;
@@ -35,19 +38,15 @@ class Crud extends CI_Model {
 			$data[$table . '_create_ip'] = $this->input->ip_address();
 		}
 		$this->db->insert($table, $data);
-		$error = $this->db->error();
-		$insertID = $this->db->insert_id();
-		$error['insert_id'] = $insertID;
-		$this->session->set_flashdata('insert_id', $insertID);
-		if ($this->log_query) { $this->log($this->db->last_query()); }
-		if ($callback) { return $error; }
-		else {
-			if (trim($error['message']) !== '') {
-				if ($this->input->is_ajax_request()) { display_response($error, 500); }
-				else { show_error($error['message'], 500, 'Error Code: ' . $error['code']); }
-			}
-			return TRUE;
+		$this->set_error($this->db->error());
+		$this->set_insert_id($this->db->insert_id($this->insert_id_key));
+		if ($this->log_query === TRUE) { $this->log($this->db->last_query()); }
+		if ($callback) {
+			$error = $this->error();
+			$error['insert_id'] = $this->insert_id();
+			return $error;
 		}
+		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
 
 	public function readData($select, $from, $wheres = NULL, $joinTable = NULL, $groupBy = NULL, $orderBy = NULL, $limit = NULL) {
@@ -67,13 +66,10 @@ class Crud extends CI_Model {
 			else if (is_numeric($limit[0])) { $this->db->limit($limit[0]); }
 		}
 		$query = $this->db->get();
-		$error = $this->db->error();
+		$this->set_error($this->db->error());
+		$this->set_insert_id(0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
-		if (trim($error['message']) !== '') {
-			if ($this->input->is_ajax_request()) { display_response($error, 500); }
-			else { show_error($error['message'], 500, 'Error Code: ' . $error['code']); }
-		}
-		return $query;
+		return ($this->error_message() !== '') ? FALSE: $query;
 	}
 
 	public function updateData($table, $data, $wheres, $callback = FALSE) {
@@ -84,16 +80,11 @@ class Crud extends CI_Model {
 		if (is_array_assoc($wheres)) { $this->db->where($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
 		$this->db->update($table, $data);
-		$error = $this->db->error();
+		$this->set_error($this->db->error());
+		$this->set_insert_id(0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
-		if ($callback) { return $error; }
-		else {
-			if (trim($error['message']) !== '') {
-				if ($this->input->is_ajax_request()) { display_response($error, 500); }
-				else { show_error($error['message'], 500, 'Error Code: ' . $error['code']); }
-			}
-			return TRUE;
-		}
+		if ($callback) { return $this->error(); }
+		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
 
 	public function deleteData($table, $wheres, $callback = FALSE) {
@@ -104,18 +95,34 @@ class Crud extends CI_Model {
 		if (is_array_assoc($wheres)) { $this->db->where($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
 		($this->delete_record === FALSE) ? $this->db->update($table, $data): $this->db->delete($table);
-		$error = $this->db->error();
+		$this->set_error($this->db->error());
+		$this->set_insert_id(0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
-		if ($callback) { return $error; }
-		else {
-			if (trim($error['message']) !== '') {
-				if ($this->input->is_ajax_request()) { display_response($error, 500); }
-				else { show_error($error['message'], 500, 'Error Code: ' . $error['code']); }
-			}
-			return TRUE;
-		}
+		if ($callback) { return $this->error(); }
+		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
 
-	private function log($data = '') { $this->db->insert('log', array('log_ip' => $this->input->ip_address(), 'log_query' => $data, 'log_url' => ( ! isset($_SERVER['REDIRECT_URL'])) ? base_url(): $_SERVER['REDIRECT_URL'], 'log_datetime' => date('Y-m-d H:i:s'))); }
+	public function error() { return $this->_error; }
+
+	public function error_code() { return $this->_error['code']; }
+
+	public function error_message() { return $this->_error['message']; }
+
+	public function insert_id() { return $this->insert_id_val; }
+
+	private function set_insert_id($var = 0) {
+		$this->insert_id_val = (int) $var;
+		return $this; 
+	}
+
+	protected function log($data = '') { $this->db->insert('log', array('log_ip' => $this->input->ip_address(), 'log_query' => $data, 'log_url' => ( ! isset($_SERVER['REDIRECT_URL'])) ? base_url(): $_SERVER['REDIRECT_URL'], 'log_datetime' => date('Y-m-d H:i:s'))); }
+
+	protected function set_error($var = array()) {
+		if (is_array_assoc($var) AND isset($var['code']) AND isset($var['message'])) {
+			$this->_error['code'] = (int) $var['code'];
+			$this->_error['message'] = trim($var['message']);
+		}
+		return $this;
+	}
 
 }
