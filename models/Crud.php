@@ -12,19 +12,25 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Crud extends CI_Model {
 
-	protected $delete_record;
-	protected $log_query;
-	protected $track_trans;
+	protected $delete_record = TRUE;
+	protected $log_query = FALSE;
+	protected $track_trans = FALSE;
 
 	public function __construct() {
 		parent::__construct();
-		$this->delete_record = (is_bool($this->config->item('delete_record'))) ? $this->config->item('delete_record'): TRUE;
-		$this->log_query = (is_bool($this->config->item('log_query'))) ? $this->config->item('log_query'): FALSE;
-		$this->track_trans = (is_bool($this->config->item('track_trans'))) ? $this->config->item('track_trans'): FALSE;
+		$this->load->helper('crud');
+		if ($this->config->load('crud', TRUE)) { $this->initialize($this->config->item('crud')); }
+	}
+
+	public function initialize(array $config = array()) {
+		foreach ($config as $key => $val) {
+			if (isset($this->$key)) { $this->$key = $val; }
+		}
+		return $this;
 	}
 
 	public function createData($table, $data, $callback = FALSE) {
-		if (is_array($data) AND count($data) > 0 AND is_array_assoc($data) AND $this->track_trans) {
+		if (is_array_assoc($data) AND $this->track_trans === TRUE) {
 			$data[$table . '_create_date'] = date('Y-m-d H:i:s');
 			$data[$table . '_create_ip'] = $this->input->ip_address();
 		}
@@ -47,16 +53,16 @@ class Crud extends CI_Model {
 	public function readData($select, $from, $wheres = NULL, $joinTable = NULL, $groupBy = NULL, $orderBy = NULL, $limit = NULL) {
 		$this->db->select($select, FALSE);
 		$this->db->from($from);
-		if (is_array($joinTable) AND count($joinTable) > 0 AND is_array_assoc($joinTable)) {
+		if (is_array_assoc($joinTable)) {
 			foreach ($joinTable as $k => $v) { $this->db->join($k, $v); }
 		}
-		if (is_array($wheres) AND count($wheres) > 0 AND is_array_assoc($wheres)) { $this->db->where($wheres); }
+		if (is_array_assoc($wheres)) { $this->db->where($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
 		if ($this->delete_record === FALSE) { $this->db->where($from . '_delete_date', NULL); }
-		if (is_array($groupBy) AND count($groupBy) > 0 AND ! is_array_assoc($groupBy)) { $this->db->group_by($groupBy); }
+		if (is_array($groupBy)) { $this->db->group_by($groupBy); }
 		else if (is_string($groupBy) AND trim($groupBy) !== '') { $this->db->group_by($groupBy); }
 		if (is_string($orderBy) AND trim($orderBy) !== '') { $this->db->order_by($orderBy); }
-		if (is_array($limit) AND count($limit) <= 2 AND ! is_array_assoc($limit)) {
+		if (is_array($limit) AND count($limit) <= 2) {
 			if (is_numeric($limit[0]) AND ! empty($limit[1]) AND is_numeric($limit[1])) { $this->db->limit($limit[0], $limit[1]); }
 			else if (is_numeric($limit[0])) { $this->db->limit($limit[0]); }
 		}
@@ -71,11 +77,11 @@ class Crud extends CI_Model {
 	}
 
 	public function updateData($table, $data, $wheres, $callback = FALSE) {
-		if (is_array($data) AND count($data) > 0 AND is_array_assoc($data) AND $this->track_trans) {
+		if (is_array_assoc($data) AND $this->track_trans === TRUE) {
 			$data[$table . '_update_date'] = date('Y-m-d H:i:s');
 			$data[$table . '_update_ip'] = $this->input->ip_address();
 		}
-		if (is_array($wheres) AND count($wheres) > 0 AND is_array_assoc($wheres)) { $this->db->where($wheres); }
+		if (is_array_assoc($wheres)) { $this->db->where($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
 		$this->db->update($table, $data);
 		$error = $this->db->error();
@@ -91,11 +97,11 @@ class Crud extends CI_Model {
 	}
 
 	public function deleteData($table, $wheres, $callback = FALSE) {
-		if (is_array($data) AND count($data) > 0 AND is_array_assoc($data) AND $this->delete_record === FALSE) {
+		if (is_array_assoc($data) AND $this->delete_record === FALSE) {
 			$data[$table . '_delete_date'] = date('Y-m-d H:i:s');
 			$data[$table . '_delete_ip'] = $this->input->ip_address();
 		}
-		if (is_array($wheres) AND count($wheres) > 0 AND is_array_assoc($wheres)) { $this->db->where($wheres); }
+		if (is_array_assoc($wheres)) { $this->db->where($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
 		($this->delete_record === FALSE) ? $this->db->update($table, $data): $this->db->delete($table);
 		$error = $this->db->error();
