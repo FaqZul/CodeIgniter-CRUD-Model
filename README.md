@@ -1,14 +1,11 @@
 # CodeIgniter-CRUD-Model
-Create one model for all CodeIgniter controllers.
+Create one model for all CodeIgniter controllers, or You can extends this class in Your model class.
 
 ## Getting Started
 ### Composer
 ```sh
-composer require faqzul/codeigniter-crud-model
+root@FaqZul:/var/www/CodeIgniter$ composer require faqzul/codeigniter-crud-model
 ```
-### Manually
-* Download the [latest version](https://github.com/FaqZul/CodeIgniter-CRUD-Model/releases).
-* Unzip and copy `models/Crud.php` to `application/models` folder.
 
 ## Prerequisites
 * PHP version 5.6 or newer is recommended.<br>
@@ -16,61 +13,75 @@ It should work on 5.4.8 as well, but we strongly advise you NOT to run such old 
 * [CodeIgniter 3.x](https://www.codeigniter.com/download)
 
 ## Configuration
-* Change the following line in the `application/config/autoload.php` file.
+* Change the following line in the `application/config/autoload.php` file for use in Your controller class.
 ```php
-$autoload['model'] = array();
+$autoload['packages'] = array();
 ↓
-$autoload['model'] = array('Crud');
+$autoload['packages'] = array(FCPATH . 'vendor/faqzul/codeigniter-crud-model');
 ```
-* Add the following line in the `application/config/config.php` file.
-```php
-/*
-|--------------------------------------------------------------------------
-| Configuration Package FaqZul/CodeIgniter-CRUD-Model
-|--------------------------------------------------------------------------
-| Delete Record (Soft Delete)
-|--------------------------------------------------------------------------
-| Data will be deleted permanently if the value is TRUE;
-| To save Your data but not to display, set it to FALSE & add the following fields in each table:
-| 	[TABLENAME]_delete_date	datetime 	DEFAULT NULL;
-| 	[TABLENAME]_delete_ip	varchar(15)	DEFAULT NULL;
-*/
-$config['delete_record'] = TRUE;
-/*
-|--------------------------------------------------------------------------
-| Log Query
-|--------------------------------------------------------------------------
-| If the value is TRUE, run the following query in Your database.
-| CREATE TABLE `log` (
-|   `log_id` int(11) NOT NULL AUTO_INCREMENT,
-|   `log_ip` varchar(15) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
-|   `log_query` text CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
-|   `log_url` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
-|   `log_datetime` datetime NOT NULL,
-|   PRIMARY KEY (`log_id`) USING BTREE
-| ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Compact;
-*/
-$config['log_query'] = FALSE;
-/*
-|--------------------------------------------------------------------------
-| History Transaction
-|--------------------------------------------------------------------------
-| If the value is TRUE, add the following fields:
-| 1. For inserting data:
-|	[TABLENAME]_create_date	datetime 	DEFAULT NULL;
-|	[TABLENAME]_create_ip	varchar(15)	DEFAULT NULL;
-| 2. For updating data:
-|	[TABLENAME]_update_date	datetime 	DEFAULT NULL;
-|	[TABLENAME]_update_ip	varchar(15)	DEFAULT NULL;
-*/
-$config['track_trans'] = FALSE;
-```
-* If You use composer, don't forget to change the following lines in the `application/config/config.php` file.
+* Change the following line in the `application/config/config.php` file for extends in Your model class.
 ```php
 $config['composer_autoload'] = FALSE;
 ↓
 $config['composer_autoload'] = FCPATH . 'vendor/autoload.php';
 ```
+### Setting CRUD Preferences
+There are 4 different preferences available to suit Your needs. You can set it up manually as described here, or automatically via the preferences stored in Your configuration file, described below:
+
+Preferences are set by passing an array of preference values to the crud initialize method. Here is an example of how You might set some preferences:
+```php
+$this->load->model('crud');
+
+/*
+* Delete Record (Soft Delete)
+* Data will be deleted permanently if the value is TRUE.
+* To save Your data but not to display, set it to FALSE & add the following fields in each table:
+* 	[TABLENAME]_delete_date	datetime 	DEFAULT NULL;
+* 	[TABLENAME]_delete_ip	varchar(15)	DEFAULT NULL;
+*/
+$config['delete_record'] = TRUE;
+
+/*
+* Save the last query that was run.
+* If the value is TRUE, run the following query in Your database:
+* CREATE TABLE `log` (
+* 	`log_id` int(11) NOT NULL AUTO_INCREMENT,
+* 	`log_ip` varchar(15) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
+* 	`log_query` text CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+* 	`log_url` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
+* 	`log_datetime` datetime NOT NULL,
+* 	PRIMARY KEY (`log_id`) USING BTREE
+* ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Compact;
+*/
+$config['log_query'] = FALSE;
+
+/*
+* History Transaction
+* If the value is TRUE, add the following fields in each table:
+* 1. For inserting data:
+* 	[TABLENAME]_create_date	datetime 	DEFAULT NULL;
+* 	[TABLENAME]_create_ip	varchar(15)	DEFAULT NULL;
+* 2. For updating data:
+* 	[TABLENAME]_update_date	datetime 	DEFAULT NULL;
+* 	[TABLENAME]_update_ip	varchar(15)	DEFAULT NULL;
+*/
+$config['track_trans'] = FALSE;
+
+$this->crud->initialize($config);
+```
+> **:information_source: Note**<br />
+> Most of the preferences have default values that will be used if You do not set them.
+### Setting CRUD Preferences in a Config File
+If You prefer not to set preferences using the above method, You can instead put them into a [config file](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tree/3.0.0/config). Simply create a new file called the [crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/config/crud.php.bak), add the $config array in that file. Then save the file at [config/crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/config/crud.php.bak) and it will be used automatically. You will NOT need to use the `$this->crud->initialize()` method if You save Your preferences in a config file.
+### CRUD Preferences
+Here is a list of all the options that can be set when using the crud class.
+
+| Preferences | Default Value | Options | Description |
+|-------------|---------------|---------|-------------|
+| delete_record | TRUE | TRUE or FALSE<br />(boolean). | TRUE: Your data will be deleted permanently.<br />FALSE: Your data able to be recovered (un-deleted). |
+| insert_id_key | NULL | None | If using the PDO driver with PostgreSQL, or using the Interbase driver, this preference which specifies the appropriate sequence to check for the insert id. |
+| log_query | FALSE | TRUE or FALSE<br />(boolean). | Save the last query that was run. |
+| track_trans | FALSE | TRUE or FALSE<br />(boolean). | To know the data (when and who) created or updated. |
 
 ## Usage
 ### createData
@@ -81,27 +92,33 @@ class Welcome extends CI_Controller {
 
 	public function add() {
 		$data = array(
-			'first_name' => 'Muhammad',
-			'middle_name' => 'Faqih',
-			'last_name' => 'Zulfikar'
+			'user_email' => 'faqzul@gmail.com',
+			'user_name' => 'FaqZul'
 		);
-		$a = $this->Crud->createData('employee', $data, TRUE);
-		if (trim($a['message']) === '') {
+		$a = $this->crud->createData('users', $data, TRUE);
+		if ($a['message'] === '') {
 			// Success inserting data.
 			$profile = array(
-				'employee_id' => $a['id'],	// it's the same $this->db->insert_id().
+				'user_id' => $a['insert_id'],			// it's the same $this->crud->insert_id().
 				'link' => 'https://github.com/FaqZul'
 			);
-			$this->Crud->createData('profile', $profile);	// Without callback.
-			$id = $this->session->flash_data('insert_id');	// Without callback, You can also get insert_id as well.
+			$this->crud->createData('user_profiles', $profile);	// Without callback.
+			$id = $this->crud->insert_id();				// Without callback, You can also get insert_id as well.
 			redirect("profile?id=$id");
 		}
 		else {
 			// Fail inserting data.
+			echo var_dump($a);
 		}
 	}
 
 }
+```
+> **:information_source: Note**<br />
+> To use $this->crud->insert_id() if using the PDO driver with PostgreSQL, or using the Interbase driver, requires preference `insert_id_key` which specifies the appropriate sequence to check for the insert id.
+```php
+$config['insert_id_key'] = 'SequenceName';
+$this->crud->initialize($config);
 ```
 ### readData
 ```php
@@ -110,23 +127,26 @@ class Welcome extends CI_Controller {
 	public function __construct() { parent::__construct(); }
 
 	public function list($page = 0) {
-		$a = $this->Crud->readData('*', 'users')->result();
+		$a = $this->crud->readData('*', 'users')->result();
 		// This method returns the query result as an array of objects, or an empty array on failure. Typically you’ll use this in a foreach loop.
-		// Produces: SELECT * FROM users
+		// Executes: SELECT * FROM users
 
-		$where = array('username !=' => 'FaqZul');
-		$b = $this->Crud->readData('*', 'users', $where)->row();
+		$where = array('username' => 'FaqZul');
+		$b = $this->crud->readData('*', 'users', $where)->row();
 		// This method returns a single result row. If your query has more than one row, it returns only the first row. The result is returned as an object.
-		// Executes: SELECT * FROM users WHERE username != 'FaqZul'
+		// Executes: SELECT * FROM users WHERE username = 'FaqZul'
 
 		$join = array('user_profiles' => 'users.id = user_profiles.user_id');
-		$c = $this->Crud->readData('*', 'users', $where, $join, '', 'users.id DESC', array(10, $page * 10))->result_array();
+		$where = array('username !=' => 'FaqZul');
+		$c = $this->crud->readData('*', 'users', $where, $join, '', 'users.id DESC', array(10, $page * 10))->result_array();
 		// This method returns the query result as a pure array, or an empty array when no result is produced. Typically you’ll use this in a foreach loop.
 		// Executes: SELECT * FROM users JOIN user_profiles ON users.id = user_profiles.user_id WHERE username != 'FaqZul' ORDER BY users.id DESC LIMIT 10
 	}
 
 }
 ```
+> **:information_source: Note**<br />
+> If preference `delete_record` FALSE, automatically add `WHERE TABLENAME_delete_date IS NULL` in Your query.
 ### updateData
 ```php
 class Welcome extends CI_Controller {
@@ -134,18 +154,8 @@ class Welcome extends CI_Controller {
 	public function __construct() { parent::__construct(); }
 
 	public function edit($id = 0) {
-		$data = array(
-			'first_name' => 'Muhammad',
-			'middle_name' => 'Faqih',
-			'last_name' => 'Zulfikar'
-		);
-		$a = $this->Crud->updateData('employee', $data, array('id' => $id), TRUE);
-		if (trim($a['message']) === '') {
-			// Success updating data.
-		}
-		else {
-			// Fail updating data.
-		}
+		$data = array('link' => 'https://github.com/FaqZul/CodeIgniter-CRUD-Model');
+		echo ($this->crud->updateData('user_profiles', $data, array('user_id' => $id))) ? 'Success updating data.': $this->crud->error_message();
 	}
 
 }
@@ -157,17 +167,55 @@ class Welcome extends CI_Controller {
 	public function __construct() { parent::__construct(); }
 
 	public function delete($id = 0) {
-		$a = $this->Crud->deleteData('employee', array('id' => $id), TRUE);
-		if (trim($a['message']) === '') {
+		if ($this->crud->deleteData('users', array('id' => $id))) {
 			// Success deleting data.
+			$this->crud->deleteData('user_profiles', array('user_id' => $id));
 		}
 		else {
 			// Fail deleting data.
+			echo var_dump($this->crud->error());
 		}
 	}
 
 }
 ```
+### extends
+```php
+class Blog_model extends Crud {
+
+	public function __construct() {
+		parent::__construct();
+		// You can initialize crud in here.
+		// $this->initialize($config);
+	}
+
+	public function get_entries() {
+		$query = $this->readData('*', 'entries');
+		return $query->result_array();
+	}
+
+	public function insert_entry() {
+		$insert = array(
+			'title' => $_POST['title'], // please read the below note.
+			'content' => $_POST['content'],
+			'date' => time()
+		);
+		$this->createData('entries', $insert);
+	}
+
+	public function update_entry() {
+		$update = array(
+			'title' => $_POST['title'], // please read the below note.
+			'content' => $_POST['content'],
+			'date' => time()
+		);
+		$this->updateData('entries', $update, array('id' => $_POST['id']));
+	}
+
+}
+```
+> **:information_source: Note**<br />
+> For the sake of simplicity in this example we’re using `$_POST` directly. This is generally bad practice, and a more common approach would be to use the [Input Library](https://www.codeigniter.com/userguide3/libraries/input.html) `$this->input->post('title')`.
 
 ## Class Reference
 > createData($table, $data [, $callback = FALSE ])
@@ -175,47 +223,61 @@ class Welcome extends CI_Controller {
 	- $table (string) - Table name.
 	- $data (array) - An associative array of field/value pairs.
 - Returns:
-	- code (int).
-	- id (int). - [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
-	- message (string).
+	- code (int) - SQL error code.
+	- insert_id (int). - [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
+	- message (string) - SQL error message.
 - Return Type: array or boolean.
-> readData($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $order = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ] ])
+> readData($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ])
 - Parameters:
 	- $select (string) - The SELECT portion of a query.
 	- $from (mixed) - Table name(s); array or string.
 	- $where (mixed) - The WHERE clause; array or string.
-	- $joinTable (array) - Multidimensional array.
-		1. Key `table` - Table name to join.
-		2. Key `relation` - The JOIN ON condition.
-		3. Key `type` - The JOIN type.
+	- $joinTable (array) - An associative array of table/condition pairs.
 	- $groupBy (mixed) - Field(s) to group by; array or string.
-	- $order (string) - Field to order by.
-	- $orderBy (string) - The order requested - ASC, DESC or random.
-	- $limit (array) - Associative array.
-		1. Key `limit` - Number of rows to limit the result to.
-		2. Key `offset` - Number of rows to skip.
-- Returns: Array containing the fetched rows.
-- Return Type: array.
-> updateData($table, $data, $where)
+	- $orderBy (string) - Field to order by. The order requested - ASC, DESC or random.
+	- $limit (array) - Adds LIMIT and OFFSET clauses to a query. `array(10, 20)`.
+		1. Key `0` (int) - Number of rows to limit the result to.
+		2. Key `1` (int) - Number of rows to skip.
+- Returns: There are several ways to generate query results:
+	- [Result Arrays](https://www.codeigniter.com/userguide3/database/results.html#result-arrays).
+	- [Result Rows](https://www.codeigniter.com/userguide3/database/results.html#result-rows).
+	- [Custom Result Objects](https://www.codeigniter.com/userguide3/database/results.html#custom-result-objects).
+	- [Result Helper Methods](https://www.codeigniter.com/userguide3/database/results.html#result-helper-methods).
+- Return Type: [CI_DB_result](https://www.codeigniter.com/user_guide/database/results.html).
+> updateData($table, $data, $where [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
 	- $data (array) - An associative array of field/value pairs.
 	- $where (mixed) - The WHERE clause; array or string.
 - Returns:
-	- code (int).
-	- message (string).
+	- code (int) - SQL error code.
+	- message (string) - SQL error message.
 - Return Type: array.
-> deleteData($table, $where)
+> deleteData($table, $where [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
 	- $where (mixed) - The WHERE clause; array or string.
 - Returns:
-	- code (int).
-	- message (string).
+	- code (int) - SQL error code.
+	- message (string) - SQL error message.
 - Return Type: array.
+> error()
+- Returns:
+	- code (int) - SQL error code.
+	- message (string) - SQL error message.
+- Return Type: array.
+> error_code()
+- Returns: SQL error code.
+- Return Type: int.
+> error_message()
+- Returns: SQL error message.
+- Return Type: string.
+> insert_id()
+- Returns: [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
+- Return Type: int.
 
 ## Contributing
-Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/2.0.0/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tags).
@@ -225,4 +287,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 See also the list of [contributors](https://github.com/FaqZul/CodeIgniter-CRUD-Model/contributors) who participated in this project.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/2.0.0/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/LICENSE) file for details.

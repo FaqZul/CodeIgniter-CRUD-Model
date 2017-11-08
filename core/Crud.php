@@ -5,7 +5,7 @@
 * @license 		https://opensource.org/licenses/MIT 	MIT License
 * @link 		https://www.facebook.com/DorkSQLi
 * @package		FaqZul/CodeIgniter-CRUD-Model
-* @subpackage	Models
+* @subpackage	Core
 * @version 		3.0.0
 */
 defined('BASEPATH') or exit('No direct script access allowed');

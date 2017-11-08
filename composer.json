@@ -5,8 +5,8 @@
 		"homepage": "https://www.facebook.com/DorkSQLi",
 		"role": "Developer"
 	}],
+	"autoload": { "classmap": ["core/Crud.php"] },
 	"description": "Create one model for all CodeIgniter controllers.",
-	"extra": { "branch-alias": { "dev-master": "3.0.0-dev" } },
 	"homepage": "https://github.com/FaqZul",
 	"keywords": ["codeigniter", "crud", "faqzul", "model"],
 	"license": "MIT",
