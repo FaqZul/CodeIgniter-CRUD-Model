@@ -39,3 +39,16 @@ if ( ! function_exists('in_array_assoc')) {
 if ( ! function_exists('is_array_assoc')) {
 	function is_array_assoc($arr = array()) { return is_array($arr) && array_diff_key($arr, array_keys(array_keys($arr))); }
 }
+
+/**
+ * Finds whether a variable is an multidimensional arrays
+ *
+ * @param	array	$arr
+ * @return	bool
+ */
+if ( ! function_exists('is_array_multi')) {
+	function is_array_multi($arr = array()) {
+		rsort($arr);
+		return isset($arr[0]) && is_array($arr[0]);
+	}
+}
