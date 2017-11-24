@@ -82,6 +82,11 @@ class Crud extends CI_Model {
 	 */
 	protected $track_trans = FALSE;
 
+	protected $joins = array(
+		'left', 'right', 'outer', 'inner', 'left_outer', 'right_outer',
+		'_esc', 'left_esc', 'right_esc', 'outer_esc', 'inner_esc', 'left_outer_esc', 'right_outer_esc'
+	);
+
 	protected $wheres = array(
 		'where', 'or_where', 'or_where_in', 'or_where_not_in', 'where_in', 'where_not_in', 'like', 'or_like', 'not_like', 'or_not_like',
 		'where_esc', 'or_where_esc', 'or_where_in_esc', 'or_where_not_in_esc', 'where_in_esc', 'where_not_in_esc', 'like_esc', 'or_like_esc', 'not_like_esc', 'or_not_like_esc'
@@ -167,9 +172,7 @@ class Crud extends CI_Model {
 	public function readData($select, $from, $wheres = NULL, $joinTable = NULL, $groupBy = NULL, $orderBy = NULL, $limit = NULL) {
 		$this->db->select($select, FALSE);
 		$this->db->from($from);
-		if (is_array_assoc($joinTable)) {
-			foreach ($joinTable as $k => $v) { $this->db->join($k, $v); }
-		}
+		if (is_array_assoc($joinTable)) { $this->set_joins($joinTable); }
 		if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
 		if ($this->delete_record === FALSE) { $this->db->where($from . '_delete_date', NULL); }
@@ -321,6 +324,50 @@ class Crud extends CI_Model {
 		if (count($a) > 1) { unset($a[0]); }
 		$this->insert_ids_val = $a;
 		return $this;
+	}
+
+	/**
+	 * Adds a JOIN clause to a query
+	 *
+	 * @param	array 	$arr
+	 * @return	void
+	 */
+	protected function set_joins($arr = array()) {
+		if (in_array_assoc($this->joins, $arr)) {
+			foreach ($arr as $keys => $vals) {
+				if (in_array($keys, $this->joins)) {
+					if (strpos($keys, 'esc') !== FALSE) {
+						$key = str_replace('esc', '', $keys);
+						if (is_array_assoc($vals)) {
+							foreach ($vals as $k => $v) { $this->db->join($k, $v, $key, FALSE); }
+						}
+						else if (is_array_multi($vals)) {
+							foreach ($vals as $val) {
+								if (is_array_assoc($val)) {
+									foreach ($val as $k => $v) { $this->db->join($k, $v, $key, FALSE); }
+								}
+							}
+						}
+					}
+					else {
+						if (is_array_assoc($vals)) {
+							foreach ($vals as $k => $v) { $this->db->join($k, $v, $keys); }
+						}
+						else if (is_array_multi($vals)) {
+							foreach ($vals as $val) {
+								if (is_array_assoc($val)) {
+									foreach ($val as $k => $v) { $this->db->join($k, $v, $keys); }
+								}
+							}
+						}
+					}
+				}
+				else { $this->db->join($keys, $vals); }
+			}
+		}
+		else {
+			foreach ($arr as $k => $v) { $this->db->join($k, $v); }
+		}
 	}
 
 	/**
