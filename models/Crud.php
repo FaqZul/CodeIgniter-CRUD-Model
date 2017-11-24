@@ -27,6 +27,13 @@ class Crud extends CI_Model {
 	protected $insert_id_val = 0;
 
 	/**
+	 * Insert IDs
+	 *
+	 * @var array
+	 */
+	protected $insert_ids_val = array(0);
+
+	/**
 	 * Delete Record (Soft Delete)
 	 * Data will be deleted permanently if the value is TRUE.
 	 * To save Your data but not to display, set it to FALSE & add the following fields in each table:
@@ -113,17 +120,33 @@ class Crud extends CI_Model {
 	 * @return	mixed
 	 */
 	public function createData($table, $data, $callback = FALSE) {
-		if (is_array_assoc($data) AND $this->track_trans === TRUE) {
-			$data[$table . '_create_date'] = date('Y-m-d H:i:s');
-			$data[$table . '_create_ip'] = $this->input->ip_address();
+		if (is_array_assoc($data)) {
+			if ($this->track_trans === TRUE) {
+				$data[$table . '_create_date'] = date('Y-m-d H:i:s');
+				$data[$table . '_create_ip'] = $this->input->ip_address();
+			}
+			$this->db->insert($table, $data);
+			$this->set_insert_id($this->db->insert_id($this->insert_id_key));
 		}
-		$this->db->insert($table, $data);
+		else if (is_array_multi($data)) {
+			if ($this->track_trans === TRUE) {
+				for ($a = 0; $a < count($data); $a++) {
+					$data[$a][$table . '_create_date'] = date('Y-m-d H:i:s');
+					$data[$a][$table . '_create_ip'] = $this->input->ip_address();
+				}
+			}
+			$this->db->insert_batch($table, $data);
+			$start = $this->db->insert_id($this->insert_id_key);
+			$end = $start + $this->db->affected_rows();
+			$this->set_insert_id($start);
+			$this->set_insert_ids($start, $end);
+		}
 		$this->set_error($this->db->error());
-		$this->set_insert_id($this->db->insert_id($this->insert_id_key));
 		if ($this->log_query === TRUE) { $this->log($this->db->last_query()); }
 		if ($callback) {
 			$error = $this->error();
 			$error['insert_id'] = $this->insert_id();
+			$error['insert_ids'] = $this->insert_ids();
 			return $error;
 		}
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
@@ -160,6 +183,7 @@ class Crud extends CI_Model {
 		$query = $this->db->get();
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
+		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
 		return ($this->error_message() !== '') ? FALSE: $query;
 	}
@@ -178,11 +202,12 @@ class Crud extends CI_Model {
 			$data[$table . '_update_date'] = date('Y-m-d H:i:s');
 			$data[$table . '_update_ip'] = $this->input->ip_address();
 		}
-		if (is_array_assoc($wheres)) { $this->db->where($wheres); }
+		if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
 		$this->db->update($table, $data);
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
+		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
@@ -206,6 +231,7 @@ class Crud extends CI_Model {
 		($this->delete_record === FALSE) ? $this->db->update($table, $data): $this->db->delete($table);
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
+		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
@@ -243,6 +269,35 @@ class Crud extends CI_Model {
 	public function insert_id() { return $this->insert_id_val; }
 
 	/**
+	 * Insert IDs
+	 *
+	 * @return array
+	 */
+	public function insert_ids() { return $this->insert_ids_val; }
+
+	/**
+	 * Log Queries
+	 *
+	 * @param	string	$var
+	 * @return	Crud
+	 */
+	protected function log($var = '') { if (trim($var) !== '') { $this->db->insert('log', array('log_ip' => $this->input->ip_address(), 'log_query' => $var, 'log_url' => ( ! isset($_SERVER['REDIRECT_URL'])) ? base_url(): $_SERVER['REDIRECT_URL'], 'log_datetime' => date('Y-m-d H:i:s'))); } }
+
+	/**
+	 * Set Error
+	 *
+	 * @param	array	$var
+	 * @return	Crud
+	 */
+	protected function set_error($var = array()) {
+		if (is_array_assoc($var) AND isset($var['code']) AND isset($var['message'])) {
+			$this->_error['code'] = (int) $var['code'];
+			$this->_error['message'] = trim($var['message']);
+		}
+		return $this;
+	}
+
+	/**
 	 * Set Insert ID
 	 *
 	 * @param	int 	$var
@@ -251,6 +306,21 @@ class Crud extends CI_Model {
 	protected function set_insert_id($var = 0) {
 		$this->insert_id_val = (int) $var;
 		return $this; 
+	}
+
+	/**
+	 * Set Insert IDs
+	 *
+	 * @param	int 	$start
+	 * @param	int 	$end
+	 * @return	Crud
+	 */
+	protected function set_insert_ids($start = 0, $end = 0) {
+		$a = array(0);
+		for ($b = $start; $b < $end; $b++) { array_push($a, (int) $b); }
+		if (count($a) > 1) { unset($a[0]); }
+		$this->insert_ids_val = $a;
+		return $this;
 	}
 
 	/**
@@ -287,51 +357,11 @@ class Crud extends CI_Model {
 						}
 						else if (is_string($vals)) { $this->db->$keys($vals); }
 					}
-					/* $key = str_replace('_esc', '', $keys);
-					if (is_array_assoc($vals)) {
-						foreach ($vals as $k => $v) { $this->db->$key($k, $v, ( ! isset("$keys_esc"))); }
-					}
-					else if (is_array_multi($vals)) {
-						if (strpos($keys, '_esc') === FALSE) {
-							foreach ($vals as $val) { $this->db->$key($val); }
-						}
-						else {
-							foreach ($vals as $val) {
-								if (is_array($val)) {
-									foreach ($val as $k => $v) { $this->db->$key($k, $v, FALSE); }
-								}
-								else if (is_string($val)) { $this->db->$key($val, NULL, FALSE); }
-							}
-						}
-					}
-					else if (is_string($vals)) { (strpos($keys, '_esc') === FALSE) ? $this->db->$key($vals): $this->db->$key($vals, NULL, FALSE); } */
 				}
 				else { $this->db->where($keys, $vals); }
 			}
 		}
 		else { $this->db->where($arr); }
-	}
-
-	/**
-	 * Log Queries
-	 *
-	 * @param	string	$var
-	 * @return	Crud
-	 */
-	protected function log($var = '') { if (trim($var) !== '') { $this->db->insert('log', array('log_ip' => $this->input->ip_address(), 'log_query' => $var, 'log_url' => ( ! isset($_SERVER['REDIRECT_URL'])) ? base_url(): $_SERVER['REDIRECT_URL'], 'log_datetime' => date('Y-m-d H:i:s'))); } }
-
-	/**
-	 * Set Error
-	 *
-	 * @param	array	$var
-	 * @return	Crud
-	 */
-	protected function set_error($var = array()) {
-		if (is_array_assoc($var) AND isset($var['code']) AND isset($var['message'])) {
-			$this->_error['code'] = (int) $var['code'];
-			$this->_error['message'] = trim($var['message']);
-		}
-		return $this;
 	}
 
 }
