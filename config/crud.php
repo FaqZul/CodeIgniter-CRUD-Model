@@ -5,6 +5,20 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |--------------------------------------------------------------------------
 | Configuration Package FaqZul/CodeIgniter-CRUD-Model
 |--------------------------------------------------------------------------
+*/
+
+/**
+ * @author		Muhammad Faqih Zulfikar
+ * @copyright	Copyright (c) 2017 FaqZul (https://github.com/FaqZul/CodeIgniter-CRUD-Model)
+ * @license		https://opensource.org/licenses/MIT 	MIT License
+ * @link		https://www.facebook.com/DorkSQLi
+ * @package		FaqZul/CodeIgniter-CRUD-Model
+ * @subpackage	Config
+ * @version		3.1.0
+ */
+
+/*
+|--------------------------------------------------------------------------
 | Delete Record (Soft Delete)
 |--------------------------------------------------------------------------
 | Data will be deleted permanently if the value is TRUE;

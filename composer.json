@@ -8,7 +8,7 @@
 	"autoload": { "classmap": ["core/Crud.php"] },
 	"description": "Create one model for all CodeIgniter controllers.",
 	"homepage": "https://github.com/FaqZul",
-	"keywords": ["codeigniter", "crud", "faqzul", "model"],
+	"keywords": ["codeigniter", "crud", "model", "faqzul"],
 	"license": "MIT",
 	"name": "faqzul/codeigniter-crud-model",
 	"require": { "php": ">=5.4.8" }

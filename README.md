@@ -4,7 +4,7 @@ Create one model for all CodeIgniter controllers, or You can extends this class 
 ## Getting Started
 ### Composer
 ```sh
-root@FaqZul:/var/www/CodeIgniter$ composer require faqzul/codeigniter-crud-model
+git@FaqZul:/var/www/CodeIgniter$ composer require faqzul/codeigniter-crud-model
 ```
 
 ## Prerequisites
@@ -32,39 +32,8 @@ Preferences are set by passing an array of preference values to the crud initial
 ```php
 $this->load->model('crud');
 
-/*
-* Delete Record (Soft Delete)
-* Data will be deleted permanently if the value is TRUE.
-* To save Your data but not to display, set it to FALSE & add the following fields in each table:
-* 	[TABLENAME]_delete_date	datetime 	DEFAULT NULL;
-* 	[TABLENAME]_delete_ip	varchar(15)	DEFAULT NULL;
-*/
 $config['delete_record'] = TRUE;
-
-/*
-* Save the last query that was run.
-* If the value is TRUE, run the following query in Your database:
-* CREATE TABLE `log` (
-* 	`log_id` int(11) NOT NULL AUTO_INCREMENT,
-* 	`log_ip` varchar(15) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
-* 	`log_query` text CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
-* 	`log_url` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '127.0.0.1',
-* 	`log_datetime` datetime NOT NULL,
-* 	PRIMARY KEY (`log_id`) USING BTREE
-* ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Compact;
-*/
 $config['log_query'] = FALSE;
-
-/*
-* History Transaction
-* If the value is TRUE, add the following fields in each table:
-* 1. For inserting data:
-* 	[TABLENAME]_create_date	datetime 	DEFAULT NULL;
-* 	[TABLENAME]_create_ip	varchar(15)	DEFAULT NULL;
-* 2. For updating data:
-* 	[TABLENAME]_update_date	datetime 	DEFAULT NULL;
-* 	[TABLENAME]_update_ip	varchar(15)	DEFAULT NULL;
-*/
 $config['track_trans'] = FALSE;
 
 $this->crud->initialize($config);
@@ -72,7 +41,7 @@ $this->crud->initialize($config);
 > **:information_source: Note**<br />
 > Most of the preferences have default values that will be used if You do not set them.
 ### Setting CRUD Preferences in a Config File
-If You prefer not to set preferences using the above method, You can instead put them into a [config file](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tree/3.0.0/config). Simply create a new file called the [crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/config/crud.php.bak), add the $config array in that file. Then save the file at [config/crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/config/crud.php.bak) and it will be used automatically. You will NOT need to use the `$this->crud->initialize()` method if You save Your preferences in a config file.
+If You prefer not to set preferences using the above method, You can instead put them into a [config file](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tree/3.1.0/config). Simply create a new file called the [crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.1.0/config/crud.php), add the $config array in that file. Then save the file at [config/crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.1.0/config/crud.php) and it will be used automatically. You will NOT need to use the `$this->crud->initialize()` method if You save Your preferences in a config file.
 ### CRUD Preferences
 Here is a list of all the options that can be set when using the crud class.
 
@@ -112,10 +81,23 @@ class Welcome extends CI_Controller {
 		}
 	}
 
+	/* Example for insert batch */
+	public function insert_batch() {
+		$datas = array();
+		for ($i = 0; $i < 100; $i++) {
+			$data["user_email"] = "faqzul$i@gmail.com";
+			$data["user_name"] = "FaqZul$i";
+			array_push($datas, $data);
+		}
+		$a = $this->crud->createData('users', $datas);
+		/* For get insert_id in every data, please use method insert_ids() */
+		echo var_dump($this->crud->insert_ids());
+	}
+
 }
 ```
 > **:information_source: Note**<br />
-> To use $this->crud->insert_id() if using the PDO driver with PostgreSQL, or using the Interbase driver, requires preference `insert_id_key` which specifies the appropriate sequence to check for the insert id.
+> To use $this->crud->insert_id() or $this->crud->insert_ids() if using the PDO driver with PostgreSQL, or using the Interbase driver, requires preference `insert_id_key` which specifies the appropriate sequence to check for the insert id.
 ```php
 $config['insert_id_key'] = 'SequenceName';
 $this->crud->initialize($config);
@@ -143,9 +125,20 @@ class Welcome extends CI_Controller {
 		// Executes: SELECT * FROM users JOIN user_profiles ON users.id = user_profiles.user_id WHERE username != 'FaqZul' ORDER BY users.id DESC LIMIT 10
 	}
 
+	public function search($q = '') {
+		/* You can use more specific LIKE queries. */
+		$like = array(array('like' => array('user_name' => $q)), 'or_like' => array('user_email' => $q));
+		/* Or You can use it. */
+		$like = array('or_like' => array('user_name' => $q, 'user_email' => $q));
+		// Executes: WHERE user_name LIKE '%$q%' OR user_email LIKE '%$q%'
+		$a = $this->crud->readData('*', 'users', $like)->result_array();
+		echo json_encode($a);
+	}
+
 }
 ```
 > **:information_source: Note**<br />
+> Now, you can use queries JOIN, LIKE, WHERE more specific. [See ChangeLog](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.1.0/CHANGELOG.md)<br />
 > If preference `delete_record` FALSE, automatically add `WHERE TABLENAME_delete_date IS NULL` in Your query.
 ### updateData
 ```php
@@ -223,10 +216,13 @@ class Blog_model extends Crud {
 	- $table (string) - Table name.
 	- $data (array) - An associative array of field/value pairs.
 - Returns:
-	- code (int) - SQL error code.
-	- insert_id (int). - [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
-	- message (string) - SQL error message.
-- Return Type: array or boolean.
+	- `$callback = FALSE` TRUE on success, FALSE on failure.
+	- `$callback = TRUE`
+		- code (int) - SQL error code.
+		- insert_id (int) - [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
+		- insert_ids (array) - Insert ID from insert_batch.
+		- message (string) - SQL error message.
+- Return Type: mixed.
 > readData($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ])
 - Parameters:
 	- $select (string) - The SELECT portion of a query.
@@ -250,17 +246,17 @@ class Blog_model extends Crud {
 	- $data (array) - An associative array of field/value pairs.
 	- $where (mixed) - The WHERE clause; array or string.
 - Returns:
-	- code (int) - SQL error code.
-	- message (string) - SQL error message.
-- Return Type: array.
+	- `$callback = FALSE` TRUE on success, FALSE on failure.
+	- `$callback = TRUE` error() method.
+- Return Type: mixed.
 > deleteData($table, $where [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
 	- $where (mixed) - The WHERE clause; array or string.
 - Returns:
-	- code (int) - SQL error code.
-	- message (string) - SQL error message.
-- Return Type: array.
+	- `$callback = FALSE` TRUE on success, FALSE on failure.
+	- `$callback = TRUE` error() method.
+- Return Type: mixed.
 > error()
 - Returns:
 	- code (int) - SQL error code.
@@ -275,9 +271,12 @@ class Blog_model extends Crud {
 > insert_id()
 - Returns: [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
 - Return Type: int.
+> insert_ids()
+- Returns: [The insert ID number when performing database inserts](https://www.codeigniter.com/user_guide/database/helpers.html?highlight=insert_id).
+- Return Type: array.
 
 ## Contributing
-Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.1.0/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tags).
@@ -287,4 +286,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 See also the list of [contributors](https://github.com/FaqZul/CodeIgniter-CRUD-Model/contributors) who participated in this project.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.0.0/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.1.0/LICENSE) file for details.
