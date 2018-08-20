@@ -30,6 +30,15 @@ $config['delete_record'] = TRUE;
 
 /*
 |--------------------------------------------------------------------------
+| Database Connectivity Settings
+|--------------------------------------------------------------------------
+| The $dbgroup variable lets you choose which connection group to make active.
+| By default there is only one group (the 'default' group).
+*/
+$config['dbgroup'] = 'default';
+
+/*
+|--------------------------------------------------------------------------
 | Sequence Name
 |--------------------------------------------------------------------------
 | The insert ID number when performing database inserts.

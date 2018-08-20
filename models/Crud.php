@@ -20,6 +20,15 @@ class Crud extends CI_Model {
 	protected $_error = array('code' => 0, 'message' => '');
 
 	/**
+	 * Database Connectivity Settings
+	 * The $dbgroup variable lets you choose which connection group to make active.
+	 * By default there is only one group (the 'default' group).
+	 *
+	 * @var string
+	 */
+	protected $dbgroup = 'default';
+
+	/**
 	 * Insert ID
 	 *
 	 * @var int
@@ -99,8 +108,9 @@ class Crud extends CI_Model {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->load->helper('crud');
 		if (file_exists(APPPATH . 'config/crud.php') AND $this->config->load('crud', TRUE)) { $this->initialize($this->config->item('crud')); }
+		$this->load->database($this->dbgroup);
+		$this->load->helper('crud');
 	}
 
 	/**
@@ -111,7 +121,13 @@ class Crud extends CI_Model {
 	 */
 	public function initialize(array $config = array()) {
 		foreach ($config as $key => $val) {
-			if (isset($this->$key)) { $this->$key = $val; }
+			if (isset($this->$key)) {
+				$this->$key = $val;
+				if ($key === 'dbgroup') {
+					$this->db->close();
+					$this->load->database($val);
+				}
+			}
 		}
 		return $this;
 	}
