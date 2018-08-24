@@ -147,6 +147,7 @@ class Crud extends CI_Model {
 				$data[$table . '_create_ip'] = $this->input->ip_address();
 			}
 			$this->db->insert($table, $data);
+			$this->set_error($this->db->error());
 			$this->set_insert_id($this->db->insert_id($this->insert_id_key));
 		}
 		else if (is_array_multi($data)) {
@@ -157,12 +158,12 @@ class Crud extends CI_Model {
 				}
 			}
 			$this->db->insert_batch($table, $data);
+			$this->set_error($this->db->error());
 			$start = $this->db->insert_id($this->insert_id_key);
 			$end = $start + $this->db->affected_rows();
 			$this->set_insert_id($start);
 			$this->set_insert_ids($start, $end);
 		}
-		$this->set_error($this->db->error());
 		if ($this->log_query === TRUE) { $this->log($this->db->last_query()); }
 		if ($callback) {
 			$error = $this->error();
