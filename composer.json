@@ -5,7 +5,10 @@
 		"homepage": "https://www.facebook.com/DorkSQLi",
 		"role": "Developer"
 	}],
-	"autoload": { "classmap": ["core/Crud.php"] },
+	"autoload": {
+		"classmap": ["core/Crud.php"],
+		"psr-4": { "FaqZul\\CodeIgniter\\CRUD\\Model\\": "core/" }
+	},
 	"description": "Create one model for all CodeIgniter controllers.",
 	"homepage": "https://github.com/FaqZul",
 	"keywords": ["codeigniter", "crud", "model", "faqzul"],
