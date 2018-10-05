@@ -12,7 +12,7 @@ namespace FaqZul\CodeIgniter\CRUD\Model;
 defined('BASEPATH') or exit('No direct script access allowed');
 require_once implode(DIRECTORY_SEPARATOR, array(__DIR__, '..', 'helpers', 'crud_helper.php'));
 
-class Crud extends CI_Model {
+class Crud extends \CI_Model {
 
 	/**
 	 * Last error
