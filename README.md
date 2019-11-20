@@ -37,6 +37,10 @@ $config['log_query'] = FALSE;
 $config['track_trans'] = FALSE;
 
 $this->crud->initialize($config);
+
+===================================
+
+$autoload['model'] = array('Crud');
 ```
 > **:information_source: Note**<br />
 > Most of the preferences have default values that will be used if You do not set them.
