@@ -135,6 +135,13 @@ class Welcome extends CI_Controller {
 		echo json_encode($a);
 	}
 
+	public function user() {
+		/* Only show users who are guests or owners. */
+		$where = ['or_where' => [['role' => 'guest'], ['role' => 'owner']]];
+		$a = $this->crud->readData('*', 'users', $where)->result_array();
+		echo json_encode($a);
+	}
+
 }
 ```
 > **:information_source: Note**<br />
