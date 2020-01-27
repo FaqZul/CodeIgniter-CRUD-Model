@@ -209,6 +209,35 @@ class Crud extends CI_Model {
 	}
 
 	/**
+	 * Read Data Query (Show Query for debugging without execution)
+	 *
+	 * @param	string	$select
+	 * @param	mixed	$from
+	 * @param	mixed	$wheres
+	 * @param	array	$joinTable
+	 * @param	mixed	$groupBy
+	 * @param	string	$orderBy
+	 * @param	array	$limit
+	 * @return	string
+	 */
+	public function readDataQuery($select, $from, $wheres = NULL, $joinTable = NULL, $groupBy = NULL, $orderBy = NULL, $limit = NULL) {
+		$this->db->select($select, FALSE);
+		$this->db->from($from);
+		if (is_array_assoc($joinTable)) { $this->set_joins($joinTable); }
+		if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
+		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
+		if ($this->delete_record === FALSE) { $this->db->where($from . '_delete_date', NULL); }
+		if (is_array($groupBy)) { $this->db->group_by($groupBy); }
+		else if (is_string($groupBy) AND trim($groupBy) !== '') { $this->db->group_by($groupBy); }
+		if (is_string($orderBy) AND trim($orderBy) !== '') { $this->db->order_by($orderBy); }
+		if (is_array($limit) AND count($limit) <= 2) {
+			if (is_numeric($limit[0]) AND ! empty($limit[1]) AND is_numeric($limit[1])) { $this->db->limit($limit[0], $limit[1]); }
+			else if (is_numeric($limit[0])) { $this->db->limit($limit[0]); }
+		}
+		return $this->db->get_compiled_select();
+	}
+
+	/**
 	 * Update Data
 	 *
 	 * @param	string	$table
