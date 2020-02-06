@@ -142,6 +142,20 @@ class Welcome extends CI_Controller {
 		echo json_encode($a);
 	}
 
+	// See: https://codeigniter.com/user_guide/database/query_builder.html#query-grouping
+	public function search_group() {
+		$where = ['a' => 'a', 'b' => 'b', 'c' => 'c', 'd' => 'd'];
+		$this->crud->group_set([0 => 'group_start', 1 => 'or_group_start']);
+		$this->crud->group_end([2 => 2]);
+		echo $this->crud->readDataQuery('*', 'mytable', $where);
+		// Print: SELECT * FROM "mytable" WHERE ( "a" = 'a' OR ( "b" = 'b' AND "c" = 'c' ) ) AND "d" = 'd'
+
+		// Search username administrator or superadmin in role admin
+		$where = ['role' => 'admin', 'or_where' => [['username' => 'administrator'], ['username' => 'superadmin']]];
+		echo $this->crud->group_set([1 => 'group_start'])->group_end([1 => 1])->readDataQuery('*', 'user', $where);
+		// Print: SELECT * FROM "user" WHERE "role" = 'admin' AND ( "username" = 'administrator' OR "username" = 'superadmin' )
+	}
+
 }
 ```
 > **:information_source: Note**<br />

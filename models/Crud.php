@@ -101,6 +101,9 @@ class Crud extends CI_Model {
 		'where_esc', 'or_where_esc', 'or_where_in_esc', 'or_where_not_in_esc', 'where_in_esc', 'where_not_in_esc', 'like_esc', 'or_like_esc', 'not_like_esc', 'or_not_like_esc'
 	);
 
+	protected $group_set = array();
+	protected $group_end = array();
+
 	/**
 	 * Class Constructor
 	 *
@@ -205,6 +208,7 @@ class Crud extends CI_Model {
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
+		$this->group_rst();
 		return ($this->error_message() !== '') ? FALSE: $query;
 	}
 
@@ -234,6 +238,7 @@ class Crud extends CI_Model {
 			if (is_numeric($limit[0]) AND ! empty($limit[1]) AND is_numeric($limit[1])) { $this->db->limit($limit[0], $limit[1]); }
 			else if (is_numeric($limit[0])) { $this->db->limit($limit[0]); }
 		}
+		$this->group_rst();
 		return $this->db->get_compiled_select();
 	}
 
@@ -309,6 +314,38 @@ class Crud extends CI_Model {
 	 * @return string
 	 */
 	public function error_message() { return $this->_error['message']; }
+
+	/**
+	 * Set Group End
+	 *
+	 * @param	array	$arr
+	 * @return	Crud
+	 */
+	public function group_end($arr) {
+		if (is_array($arr)) { $this->group_end = $arr; }
+		return $this;
+	}
+
+	/**
+	 * Set Group Start
+	 *
+	 * @param	array	$arr
+	 * @return	Crud
+	 */
+	public function group_set($arr) {
+		if (is_array($arr)) { $this->group_set = $arr; }
+		return $this;
+	}
+
+	/**
+	 * Reset Group
+	 *
+	 * @return	Crud
+	 */
+	public function group_rst() {
+		$this->group_end = $this->group_set = array();
+		return $this;
+	}
 
 	/**
 	 * Insert ID
@@ -424,7 +461,15 @@ class Crud extends CI_Model {
 	 */
 	protected function set_wheres($arr = array()) {
 		if (in_array_assoc($this->wheres, $arr)) {
+			$groupIdx = 0;
+			$groupKey = -1;
 			foreach ($arr as $keys => $vals) {
+				$groupKey += 1;
+				if (isset($this->group_set[$groupKey]) && is_string($this->group_set[$groupKey])) {
+					$groupVal = $this->group_set[$groupKey];
+					$this->db->$groupVal();
+					$groupIdx = 1;
+				}
 				if (in_array($keys, $this->wheres)) {
 					if (strpos($keys, '_esc') !== FALSE) {
 						$key = str_replace('_esc', '', $keys);
@@ -452,9 +497,28 @@ class Crud extends CI_Model {
 					}
 				}
 				else { $this->db->where($keys, $vals); }
+				if ($groupIdx === 1 && isset($this->group_end[$groupKey]) && is_numeric($this->group_end[$groupKey])) {
+					for ($a = 0; $a < (int) $this->group_end[$groupKey]; $a++) { $this->db->group_end(); }
+				}
 			}
+		} else {
+			if (is_array_assoc($arr)) {
+				$groupIdx = 0;
+				$groupKey = -1;
+				foreach ($arr as $arrk => $arrv) {
+					$groupKey += 1;
+					if (isset($this->group_set[$groupKey]) && is_string($this->group_set[$groupKey])) {
+						$groupVal = $this->group_set[$groupKey];
+						$this->db->$groupVal();
+						$groupIdx = 1;
+					}
+					$this->db->where($arrk, $arrv);
+					if ($groupIdx === 1 && isset($this->group_end[$groupKey]) && is_numeric($this->group_end[$groupKey])) {
+						for ($a = 0; $a < (int) $this->group_end[$groupKey]; $a++) { $this->db->group_end(); }
+					}
+				}
+			} else { $this->db->where($arr); }
 		}
-		else { $this->db->where($arr); }
 	}
 
 }
