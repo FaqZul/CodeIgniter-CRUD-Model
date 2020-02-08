@@ -101,6 +101,9 @@ class Crud extends CI_Model {
 		'where_esc', 'or_where_esc', 'or_where_in_esc', 'or_where_not_in_esc', 'where_in_esc', 'where_not_in_esc', 'like_esc', 'or_like_esc', 'not_like_esc', 'or_not_like_esc'
 	);
 
+	protected $dtColumnCreate = array();
+	protected $dtColumnDelete = array();
+	protected $dtColumnUpdate = array();
 	protected $group_set = array();
 	protected $group_end = array();
 
@@ -178,6 +181,43 @@ class Crud extends CI_Model {
 	}
 
 	/**
+	 * Create Column DataTable
+	 *
+	 * @param	string	$column
+	 * @param	string	$content
+	 * @param	string	$match_replacement
+	 * @return	Crud
+	 */
+	public function dtColumnAdd($column, $content, $match_replacement = NULL) {
+		$this->dtColumnCreate[$column] = ['content' => $content, 'replacement' => $this->explode(',', $match_replacement)];
+		return $this;
+	}
+
+	/**
+	 * Delete Column DataTable
+	 *
+	 * @param	string	$column
+	 * @return	Crud
+	 */
+	public function dtColumnDel($column) {
+		$this->dtColumnDelete = $this->explode(',', $column);
+		return $this;
+	}
+
+	/**
+	 * Update Column DataTable
+	 *
+	 * @param	string	$column
+	 * @param	string	$content
+	 * @param	string	$match_replacement
+	 * @return	Crud
+	 */
+	public function dtColumnUpd($column, $content, $match_replacement = NULL) {
+		$this->dtColumnUpdate[$column] = ['content' => $content, 'replacement' => $this->explode(',', $match_replacement)];
+		return $this;
+	}
+
+	/**
 	 * Read Data
 	 *
 	 * @param	string	$select
@@ -240,6 +280,117 @@ class Crud extends CI_Model {
 		}
 		$this->group_rst();
 		return $this->db->get_compiled_select();
+	}
+
+	/**
+	 * Read Data Table (Datatables server-side implementation)
+	 *
+	 * @param	string	$select
+	 * @param	mixed	$from
+	 * @param	mixed	$wheres
+	 * @param	array	$joinTable
+	 * @param	mixed	$groupBy
+	 * @return	array
+	 */
+	public function readDataTable($select, $from, $wheres = NULL, $joinTable = NULL, $groupBy = NULL, $output = 'full') {
+		$cols = array();
+		$column = array();
+		$columns = $this->input->get_post('columns');
+		$draw = $this->input->get_post('draw');
+		$length = (int) $this->input->get_post('length');
+		$order = $this->input->get_post('order');
+		$platform = strtolower($this->db->platform());
+		$search = $this->input->get_post('search');
+		$searchGroup = 0;
+		$selects = array();
+		$start = (int) $this->input->get_post('start');
+		foreach ($this->explode(',', $select) as $cv) {
+			$ca = trim(preg_replace('/(.*)\s+as\s+(\w*)/i', '$2', $cv));
+			$ca = preg_replace('/.*\.(.*)/i', '$1', $ca); // Get name after `.`
+			$cols[] = $ca;
+			if ( ! in_array($ca, $this->dtColumnDelete)) {
+				$column[] = $ca;
+				$selects[] = trim(preg_replace('/(.*)\s+as\s+(\w*)/i', '$1', $cv));
+			}
+		}
+		$this->db->select($select);
+		$this->db->from($from);
+		if (is_array_assoc($joinTable)) { $this->set_joins($joinTable); }
+		if (is_array_assoc($wheres) || (is_string($wheres) && trim($wheres) !== '')) {
+			if (is_numeric($draw)) { $this->db->group_start(); }
+			(is_array_assoc($wheres)) ? $this->set_wheres($wheres): $this->db->where($wheres);
+			if (is_numeric($draw)) { $this->db->group_end(); }
+		}
+		if ($this->delete_record === FALSE) { $this->db->where($from . '_delete_date', NULL); }
+		for ($a = 0; $a < count($columns); $a++) {
+			$aa = array_search($columns[$a]['data'], $column);
+			if ($aa === FALSE) {
+				if (isset($column[$columns[$a]['data']])) { $aa = $columns[$a]['data']; }
+			}
+			if ($columns[$a]['searchable'] === 'true' && is_numeric($aa)) {
+				$searchColumn = trim($columns[$a]['search']['value']);
+				$searchGlobal = trim($search['value']);
+				if ($searchColumn !== '' || $searchGlobal !== '') {
+					$searchFunct = ($searchColumn !== '') ? 'like': 'or_like';
+					$searchField = $selects[$aa];
+					$searchMatch = ($searchColumn !== '') ? $searchColumn: $searchGlobal;
+					$searchEsc = NULL;
+					if ($platform === 'postgre') {
+						$searchField .= '::VARCHAR'; // Cast to VARCHAR for data types: date, decimal, float, int, etc.
+						$searchMatch = $this->db->escape_like_str($searchMatch);
+						$searchEsc = FALSE;
+					}
+					if ($searchGroup === 0) {
+						$this->db->group_start();
+						$searchGroup = 1;
+					}
+					$this->db->$searchFunct($searchField, $searchMatch, 'both', $searchEsc);
+				}
+			}
+		}
+		if ($searchGroup === 1) { $this->db->group_end(); }
+		if (is_array($groupBy)) { $this->db->group_by($groupBy); }
+		else if (is_string($groupBy) AND trim($groupBy) !== '') { $this->db->group_by($groupBy); }
+		for ($b = 0; $b < count($order); $b++) {
+			$ba = $order[$b];
+			$bb = array_search($columns[$ba['column']]['data'], $column);
+			if ($bb === FALSE) {
+				if (isset($column[$columns[$ba['column']]['data']])) { $bb = $columns[$ba['column']]['data']; }
+			}
+			if ($columns[$ba['column']]['orderable'] === 'true' && is_numeric($bb)) { $this->db->order_by($selects[$bb], $ba['dir']); }
+		}
+		$sqlData = '';
+		if ($length > 0) {
+			$this->db->limit($length, $start);
+			$sqlData = $this->db->get_compiled_select(NULL, FALSE);
+		}
+		$qData = $this->db->get();
+		$rData = $qData->result_array();
+		foreach ($rData as $rDataKey => $rDataVal) {
+			foreach ($this->dtColumnCreate as $dtcck => $dtccv) { $rData[$rDataKey][$dtcck] = $this->exec_replace($dtccv, $rData[$rDataKey], $cols); }
+			foreach ($this->dtColumnUpdate as $dtcuk => $dtcuv) {
+				if (array_key_exists($dtcuk, $rData[$rDataKey])) { $rData[$rDataKey][$dtcuk] = $this->exec_replace($dtcuv, $rData[$rDataKey], $cols); }
+			}
+			foreach ($this->dtColumnDelete as $dtcd) {
+				if (array_key_exists($dtcd, $rData[$rDataKey])) { unset($rData[$rDataKey][$dtcd]); }
+			}
+			if (is_numeric($columns[0]['data'])) { $rData[$rDataKey] = array_values($rData[$rDataKey]); }
+		}
+		$return = array();
+		if ($output === 'full') {
+			$return['draw'] = (int) $draw;
+			if ($length > 0 && $sqlData !== '') {
+				$qFiltered = 'SELECT COUNT(*) AS filter FROM (' . (substr($sqlData, 0, strpos($sqlData, ' LIMIT'))) . ') AS qFilter';
+				$rFiltered = $this->db->query($qFiltered)->row_array();
+				$return['recordsFiltered'] = (int) $rFiltered['filter'];
+			} else { $return['recordsFiltered'] = $qData->num_rows(); }
+			$qTotal = 'SELECT COUNT(*) AS total FROM (' . $this->readDataQuery($select, $from, $wheres, $joinTable, $groupBy) . ') AS qTotal';
+			$rTotal = $this->db->query($qTotal)->row_array();
+			$return['recordsTotal'] = (int) $rTotal['total'];
+		} else { $return['head'] = $column; }
+		$return['q'] = $this->db->queries;
+		$return['data'] = $rData;
+		return $return;
 	}
 
 	/**
@@ -360,6 +511,80 @@ class Crud extends CI_Model {
 	 * @return array
 	 */
 	public function insert_ids() { return $this->insert_ids_val; }
+
+	/**
+	 * Return the difference of open and close characters
+	 *
+	 * @param	string	$str
+	 * @param	string	$open
+	 * @param	string	$close
+	 * @return	int
+	 */
+	protected function balanceChars($str, $open, $close) {
+		$openCount = substr_count($str, $open);
+		$closeCount = substr_count($str, $close);
+		return $openCount - $closeCount;
+	}
+
+	/**
+	 * Runs callback functions and makes replacements
+	 *
+	 * @param	string	$custom_val
+	 * @param	string	$raw_data
+	 * @param	array	$columns
+	 * @return	string
+	 */
+	protected function exec_replace($custom_val, $row_data, $columns) {
+		$replace_string = '';
+		// Go through our array backwards, else $1 (foo) will replace $11, $12 etc with foo1, foo2 etc
+		$custom_val['replacement'] = array_reverse($custom_val['replacement'], TRUE);
+		if (isset($custom_val['replacement']) && is_array($custom_val['replacement'])) {
+			// Added this line because when the replacement has over 10 elements replaced the variable "$1" first by the "$10"
+			$custom_val['replacement'] = array_reverse($custom_val['replacement'], TRUE);
+			foreach($custom_val['replacement'] as $key => $val) {
+				$sval = preg_replace('/(?<!\w)([\'\"])(.*)\\1(?!\w)/i', '$2', trim($val));
+				if (preg_match('/(\w+::\w+|\w+)\((.*)\)/i', $val, $matches) && is_callable($matches[1])) {
+					$func = $matches[1];
+					$args = preg_split("/[\s,]*\\\"([^\\\"]+)\\\"[\s,]*|" . "[\s,]*'([^']+)'[\s,]*|" . "[,]+/", $matches[2], 0, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+					foreach ($args as $argk => $argv) {
+						$argval = preg_replace("/(?<!\w)([\'\"])(.*)\\1(?!\w)/i", '$2', trim($argv));
+						$args[$argk] = (in_array($argval, $columns)) ? ($row_data[$argval]) : $argval;
+					}
+					$replace_string = call_user_func_array($func, $args);
+				} else if (in_array($sval, $columns)) {
+					$replace_string = $row_data[$sval];
+				} else { $replace_string = $sval; }
+				$custom_val['content'] = str_ireplace('$' . ($key + 1), $replace_string, $custom_val['content']);
+			}
+		}
+		return $custom_val['content'];
+	}
+
+	/**
+	 * Explode, but ignore delimiter until closing characters are found
+	 *
+	 * @param	string	$delimiter
+	 * @param	string	$str
+	 * @param	string	$open
+	 * @param	string	$close
+	 * @return	array
+	 */
+	protected function explode($delimiter, $str, $open = '(', $close = ')') {
+		$balance = 0;
+		$hold = $retval = array();
+		$parts = explode($delimiter, $str);
+		foreach ($parts as $part) {
+			$hold[] = $part;
+			$balance += $this->balanceChars($part, $open, $close);
+			if ($balance < 1) {
+				$balance = 0;
+				$retval[] = implode($delimiter, $hold);
+				$hold = array();
+			}
+		}
+		if (count($hold) > 0) { $retval[] = implode($delimiter, $hold); }
+		return $retval;
+	}
 
 	/**
 	 * Log Queries
