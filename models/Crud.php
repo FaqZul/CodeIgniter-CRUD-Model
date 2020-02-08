@@ -388,7 +388,6 @@ class Crud extends CI_Model {
 			$rTotal = $this->db->query($qTotal)->row_array();
 			$return['recordsTotal'] = (int) $rTotal['total'];
 		} else { $return['head'] = $column; }
-		$return['q'] = $this->db->queries;
 		$return['data'] = $rData;
 		return $return;
 	}
