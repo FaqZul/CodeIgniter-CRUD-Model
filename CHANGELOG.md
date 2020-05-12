@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.<br>
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.2.0] - 2020-05-12
+### Added
+- [Support connecting to multiple databases](https://github.com/FaqZul/CodeIgniter-CRUD-Model/commit/eef50b11d83a75dfe8d5d200c5352ee1d953f30b).
+- Namespace for extends to the model class `FaqZul\CodeIgniter\CRUD\Model`.
+- Show Query for debugging without execution `readDataQuery(..).`
+- Query grouping.
+- [Support DataTables ~1.10](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.0/DataTables.md).
+### Fixed
+- [Database errors are always correct](https://github.com/FaqZul/CodeIgniter-CRUD-Model/commit/0a76bf0374f6732fd05f3afdeb2f25d7b5ccc93e).
+
 ## [3.1.0] - 2017-12-06
 ### Added
 - Support insert_batch in createData() method.
