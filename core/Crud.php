@@ -414,6 +414,7 @@ class Crud extends \CI_Model {
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
+		$this->group_rst();
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
@@ -438,6 +439,7 @@ class Crud extends \CI_Model {
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
+		$this->group_rst();
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
