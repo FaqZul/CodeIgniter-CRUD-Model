@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.<br>
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.2.1] - 2020-06-01
+### Fixed
+- Query grouping not reset.
+
 ## [3.2.0] - 2020-05-12
 ### Added
 - [Support connecting to multiple databases](https://github.com/FaqZul/CodeIgniter-CRUD-Model/commit/eef50b11d83a75dfe8d5d200c5352ee1d953f30b).

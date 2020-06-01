@@ -6,7 +6,7 @@
  * @link		https://www.facebook.com/DorkSQLi
  * @package		FaqZul/CodeIgniter-CRUD-Model
  * @subpackage	Core
- * @version		3.2.0
+ * @version		3.2.1
  */
 namespace FaqZul\CodeIgniter\CRUD\Model;
 defined('BASEPATH') or exit('No direct script access allowed');
@@ -414,6 +414,7 @@ class Crud extends \CI_Model {
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
+		$this->group_rst();
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
@@ -438,6 +439,7 @@ class Crud extends \CI_Model {
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
 		if ($this->log_query) { $this->log($this->db->last_query()); }
+		$this->group_rst();
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
