@@ -48,7 +48,11 @@ if ( ! function_exists('is_array_assoc')) {
  */
 if ( ! function_exists('is_array_multi')) {
 	function is_array_multi($arr = array()) {
-		rsort($arr);
-		return isset($arr[0]) && is_array($arr[0]);
+		if (is_array($arr))
+		{
+			rsort($arr);
+			return isset($arr[0]) && is_array($arr[0]);
+		}
+		return FALSE;
 	}
 }
