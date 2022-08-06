@@ -14,7 +14,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @link		https://www.facebook.com/DorkSQLi
  * @package		FaqZul/CodeIgniter-CRUD-Model
  * @subpackage	Config
- * @version		3.2.1
+ * @version		3.2.2-dev
  */
 
 /*

@@ -6,7 +6,7 @@
  * @link		https://www.facebook.com/DorkSQLi
  * @package		FaqZul/CodeIgniter-CRUD-Model
  * @subpackage	Core
- * @version		3.2.1
+ * @version		3.2.2-dev
  */
 namespace FaqZul\CodeIgniter\CRUD\Model;
 defined('BASEPATH') or exit('No direct script access allowed');
