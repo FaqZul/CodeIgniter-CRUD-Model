@@ -646,8 +646,8 @@ class Crud extends \CI_Model {
 		if (in_array_assoc($this->joins, $arr)) {
 			foreach ($arr as $keys => $vals) {
 				if (in_array($keys, $this->joins)) {
-					if (strpos($keys, 'esc') !== FALSE) {
-						$key = str_replace('esc', '', $keys);
+					if (strpos($keys, '_esc') !== FALSE) {
+						$key = str_replace('_esc', '', $keys);
 						if (is_array_assoc($vals)) {
 							foreach ($vals as $k => $v) { $this->db->join($k, $v, $key, FALSE); }
 						}
