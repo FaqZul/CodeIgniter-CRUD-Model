@@ -503,6 +503,32 @@ class Crud extends \CI_Model {
 	}
 
 	/**
+	 * Delete Data Query
+	 * 
+	 * Compiles a delete query string and returns the sql
+	 *
+	 * @param	string	$table
+	 * @param	mixed	$wheres
+	 * @return	string
+	 */
+	public function deleteDataQuery($table, $wheres) {
+		if ($this->delete_record === FALSE) {
+			$track_trans = $this->track_trans;
+			$this->track_trans = FALSE;
+			$data[$table . '_delete_date'] = date('Y-m-d H:i:s');
+			$data[$table . '_delete_ip'] = $this->input->ip_address();
+			$sql = $this->updateDataQuery($table, $data, $wheres);
+			$this->track_trans = $track_trans;
+			return $sql;
+		}
+		else {
+			if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
+			else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
+			return $this->db->get_compiled_delete($table);
+		}
+	}
+
+	/**
 	 * Error
 	 *
 	 * Returns an array containing code and message of the last
