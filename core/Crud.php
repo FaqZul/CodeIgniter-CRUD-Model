@@ -182,6 +182,41 @@ class Crud extends \CI_Model {
 	}
 
 	/**
+	 * Create Data Query
+	 *
+	 * Compiles an insert query and returns the sql
+	 *
+	 * @param 	string 	$table
+	 * @param 	array 	$data
+	 * @return 	mixed
+	 */
+	public function createDataQuery($table, $data) {
+		if (is_array_assoc($data)) {
+			if ($this->track_trans === TRUE) {
+				$data[$table . '_create_date'] = date('Y-m-d H:i:s');
+				$data[$table . '_create_ip'] = $this->input->ip_address();
+			}
+			return $this->db->set($data)->get_compiled_insert($table);
+		}
+		else if (is_array_multi($data)) {
+			$sql = '';
+			foreach ($data as $key => $val) {
+				if ($this->track_trans === TRUE) {
+					$val[$table . '_create_date'] = date('Y-m-d H:i:s');
+					$val[$table . '_create_ip'] = $this->input->ip_address();
+				}
+				$query = $this->db->set($val)->get_compiled_insert($table);
+				if ($key > 0) {
+					$pos = strpos($query, ' VALUES ');
+					$sql .= substr_replace($query, ',', 0, $pos + 7);
+				} else { $sql .= $query; }
+			}
+			return $sql;
+		}
+		return FALSE;
+	}
+
+	/**
 	 * Create Column DataTable
 	 *
 	 * @param	string	$column
