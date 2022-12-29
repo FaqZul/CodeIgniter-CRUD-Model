@@ -288,7 +288,9 @@ class Crud extends CI_Model {
 	}
 
 	/**
-	 * Read Data Query (Show Query for debugging without execution)
+	 * Read Data Query
+	 * 
+	 * Compiles a SELECT query string and returns the sql.
 	 *
 	 * @param	string	$select
 	 * @param	mixed	$from
