@@ -456,6 +456,27 @@ class Crud extends CI_Model {
 	}
 
 	/**
+	 * Update Data Query
+	 * 
+	 * Compiles an update query and returns the sql
+	 *
+	 * @param	string	$table
+	 * @param	array	$data
+	 * @param	mixed	$wheres
+	 * @return	string
+	 */
+	public function updateDataQuery($table, $data, $wheres) {
+		if (is_array_assoc($data) AND $this->track_trans === TRUE) {
+			$data[$table . '_update_date'] = date('Y-m-d H:i:s');
+			$data[$table . '_update_ip'] = $this->input->ip_address();
+		}
+		$this->db->set($data);
+		if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
+		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
+		return $this->db->get_compiled_update($table);
+	}
+
+	/**
 	 * Delete Data
 	 *
 	 * @param	string	$table
