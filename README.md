@@ -245,6 +245,12 @@ class Blog_model extends Crud {
 		- insert_ids (array) - Insert ID from insert_batch.
 		- message (string) - SQL error message.
 - Return Type: mixed.
+> createDataQuery($table, $data)
+- Parameters:
+	- $table (string) - Table name.
+	- $data (array) - An associative array of field/value pairs.
+- Returns: Compiles an INSERT statement and returns it as a string.
+- Return Type: string.
 > readData($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ])
 - Parameters:
 	- $select (string) - The SELECT portion of a query.
@@ -262,6 +268,19 @@ class Blog_model extends Crud {
 	- [Custom Result Objects](https://www.codeigniter.com/userguide3/database/results.html#custom-result-objects).
 	- [Result Helper Methods](https://www.codeigniter.com/userguide3/database/results.html#result-helper-methods).
 - Return Type: [CI_DB_result](https://www.codeigniter.com/user_guide/database/results.html).
+> readDataQuery($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ])
+- Parameters:
+	- $select (string) - The SELECT portion of a query.
+	- $from (mixed) - Table name(s); array or string.
+	- $where (mixed) - The WHERE clause; array or string.
+	- $joinTable (array) - An associative array of table/condition pairs.
+	- $groupBy (mixed) - Field(s) to group by; array or string.
+	- $orderBy (string) - Field to order by. The order requested - ASC, DESC or random.
+	- $limit (array) - Adds LIMIT and OFFSET clauses to a query. `array(10, 20)`.
+		1. Key `0` (int) - Number of rows to limit the result to.
+		2. Key `1` (int) - Number of rows to skip.
+- Returns: Compiles a SELECT statement and returns it as a string.
+- Return Type: string.
 > updateData($table, $data, $where [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
@@ -271,6 +290,13 @@ class Blog_model extends Crud {
 	- `$callback = FALSE` TRUE on success, FALSE on failure.
 	- `$callback = TRUE` error() method.
 - Return Type: mixed.
+> updateDataQuery($table, $data, $where)
+- Parameters:
+	- $table (string) - Table name.
+	- $data (array) - An associative array of field/value pairs.
+	- $where (mixed) - The WHERE clause; array or string.
+- Returns: Compiles an UPDATE statement and returns it as a string.
+- Return Type: string.
 > deleteData($table, $where [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
@@ -279,6 +305,12 @@ class Blog_model extends Crud {
 	- `$callback = FALSE` TRUE on success, FALSE on failure.
 	- `$callback = TRUE` error() method.
 - Return Type: mixed.
+> deleteDataQuery($table, $where)
+- Parameters:
+	- $table (string) - Table name.
+	- $where (mixed) - The WHERE clause; array or string.
+- Returns: Compiles a DELETE statement and returns it as a string.
+- Return Type: string.
 > error()
 - Returns:
 	- code (int) - SQL error code.

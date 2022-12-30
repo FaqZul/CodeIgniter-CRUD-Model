@@ -2,7 +2,16 @@
 All notable changes to this project will be documented in this file.<br>
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.2.2] - 2022-08-17
+## [3.2.2] - 2022-12-31
+### Added
+- Compiles an INSERT statement and returns it as a string `createDataQuery(..)`.
+- Compiles an UPDATE statement and returns it as a string `updateDataQuery(..)`.
+- Compiles a DELETE statement and returns it as a string `deleteDataQuery(..)`.
+### Changed
+- Compiles a SELECT statement and returns it as a string `readDataQuery(..)`.
+### Fixed
+- WARNING rsort() expects parameter 1 to be array.
+- Escape values and identifiers a JOIN clause to a query.
 
 ## [3.2.1] - 2020-06-01
 ### Fixed
