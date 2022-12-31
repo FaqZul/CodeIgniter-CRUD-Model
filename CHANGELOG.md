@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Compiles a DELETE statement and returns it as a string `deleteDataQuery(..)`.
 ### Changed
 - Compiles a SELECT statement and returns it as a string `readDataQuery(..)`.
+### Deprecated
+- Configuration log_query.
+- Configuration track_trans.
 ### Fixed
 - WARNING rsort() expects parameter 1 to be array.
 - Escape values and identifiers a JOIN clause to a query.

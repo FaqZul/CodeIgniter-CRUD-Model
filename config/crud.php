@@ -25,6 +25,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | To save Your data but not to display, set it to FALSE & add the following fields in each table:
 | 	$TableName_delete_date	datetime 	DEFAULT NULL;
 | 	$TableName_delete_ip	varchar(15)	DEFAULT NULL;
+|
+| WARNING: This configuration will change.
 */
 $config['delete_record'] = TRUE;
 
@@ -46,6 +48,10 @@ $config['dbgroup'] = 'default';
 */
 $config['insert_id_key'] = NULL;
 
+/**
+ * @todo        Remove in version 3.3+.
+ * @deprecated  3.2.2
+ */
 /*
 |--------------------------------------------------------------------------
 | Log Query
@@ -62,6 +68,10 @@ $config['insert_id_key'] = NULL;
 */
 $config['log_query'] = FALSE;
 
+/**
+ * @todo        Remove in version 3.3+.
+ * @deprecated  3.2.2
+ */
 /*
 |--------------------------------------------------------------------------
 | History Transaction

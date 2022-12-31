@@ -73,7 +73,9 @@ class Crud extends CI_Model {
 	 * 	PRIMARY KEY (`log_id`) USING BTREE
 	 * ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Compact;
 	 *
-	 * @var bool
+	 * @todo		Remove in version 3.3+.
+	 * @deprecated	3.2.2
+	 * @var 		bool
 	 */
 	protected $log_query = FALSE;
 
@@ -87,7 +89,9 @@ class Crud extends CI_Model {
 	 * 	[TABLENAME]_update_date	datetime 	DEFAULT NULL;
 	 * 	[TABLENAME]_update_ip	varchar(15)	DEFAULT NULL;
 	 *
-	 * @var bool
+	 * @todo		Remove in version 3.3+.
+	 * @deprecated	3.2.2
+	 * @var 		bool
 	 */
 	protected $track_trans = FALSE;
 
@@ -170,7 +174,12 @@ class Crud extends CI_Model {
 			$this->set_insert_id($start);
 			$this->set_insert_ids($start, $end);
 		}
-		if ($this->log_query === TRUE) { $this->log($this->db->last_query()); }
+		if ($this->log_query === TRUE) {
+			$track_trans = $this->track_trans;
+			$this->track_trans = FALSE;
+			$this->log($this->createDataQuery($table, $data));
+			$this->track_trans = $track_trans;
+		}
 		if ($callback) {
 			$error = $this->error();
 			$error['insert_id'] = $this->insert_id();
@@ -282,8 +291,10 @@ class Crud extends CI_Model {
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
-		if ($this->log_query) { $this->log($this->db->last_query()); }
-		$this->group_rst();
+		if ($this->log_query === TRUE)
+			$this->log($this->readDataQuery($select, $from, $wheres, $joinTable, $groupBy, $orderBy, $limit));
+		else
+			$this->group_rst();
 		return ($this->error_message() !== '') ? FALSE: $query;
 	}
 
@@ -449,8 +460,12 @@ class Crud extends CI_Model {
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
-		if ($this->log_query) { $this->log($this->db->last_query()); }
-		$this->group_rst();
+		if ($this->log_query === TRUE) {
+			$track_trans = $this->track_trans;
+			$this->track_trans = FALSE;
+			$this->log($this->updateDataQuery($table, $data, $wheres));
+			$this->track_trans = $track_trans;
+		} else { $this->group_rst(); }
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
@@ -473,6 +488,7 @@ class Crud extends CI_Model {
 		$this->db->set($data);
 		if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
 		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
+		$this->group_rst();
 		return $this->db->get_compiled_update($table);
 	}
 
@@ -495,8 +511,10 @@ class Crud extends CI_Model {
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
-		if ($this->log_query) { $this->log($this->db->last_query()); }
-		$this->group_rst();
+		if ($this->log_query === TRUE)
+			$this->log($this->deleteDataQuery($table, $wheres));
+		else
+			$this->group_rst();
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
 	}
@@ -523,6 +541,7 @@ class Crud extends CI_Model {
 		else {
 			if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
 			else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
+			$this->group_rst();
 			return $this->db->get_compiled_delete($table);
 		}
 	}
@@ -674,8 +693,10 @@ class Crud extends CI_Model {
 	/**
 	 * Log Queries
 	 *
-	 * @param	string	$var
-	 * @return	Crud
+	 * @todo		Remove in version 3.3+.
+	 * @deprecated	3.2.2
+	 * @param		string	$var
+	 * @return		Crud
 	 */
 	protected function log($var = '') { if (trim($var) !== '') { $this->db->insert('log', array('log_ip' => $this->input->ip_address(), 'log_query' => $var, 'log_url' => ( ! isset($_SERVER['REDIRECT_URL'])) ? base_url(): $_SERVER['REDIRECT_URL'], 'log_datetime' => date('Y-m-d H:i:s'))); } }
 
