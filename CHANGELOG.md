@@ -2,7 +2,19 @@
 All notable changes to this project will be documented in this file.<br>
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.2.2] - 2022-08-17
+## [3.2.2] - 2022-12-31
+### Added
+- Compiles an INSERT statement and returns it as a string `createDataQuery(..)`.
+- Compiles an UPDATE statement and returns it as a string `updateDataQuery(..)`.
+- Compiles a DELETE statement and returns it as a string `deleteDataQuery(..)`.
+### Changed
+- Compiles a SELECT statement and returns it as a string `readDataQuery(..)`.
+### Deprecated
+- Configuration log_query.
+- Configuration track_trans.
+### Fixed
+- WARNING rsort() expects parameter 1 to be array.
+- Escape values and identifiers a JOIN clause to a query.
 
 ## [3.2.1] - 2020-06-01
 ### Fixed
@@ -14,7 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Namespace for extends to the model class `FaqZul\CodeIgniter\CRUD\Model`.
 - Show Query for debugging without execution `readDataQuery(..).`
 - Query grouping.
-- [Support DataTables ~1.10](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.0/DataTables.md).
+- [Support DataTables ~1.10](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/DataTables.md).
 ### Fixed
 - [Database errors are always correct](https://github.com/FaqZul/CodeIgniter-CRUD-Model/commit/0a76bf0374f6732fd05f3afdeb2f25d7b5ccc93e).
 

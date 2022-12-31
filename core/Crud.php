@@ -6,7 +6,7 @@
  * @link		https://www.facebook.com/DorkSQLi
  * @package		FaqZul/CodeIgniter-CRUD-Model
  * @subpackage	Core
- * @version		3.2.2-dev
+ * @version		3.2.2
  */
 namespace FaqZul\CodeIgniter\CRUD\Model;
 defined('BASEPATH') or exit('No direct script access allowed');
@@ -75,7 +75,9 @@ class Crud extends \CI_Model {
 	 * 	PRIMARY KEY (`log_id`) USING BTREE
 	 * ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Compact;
 	 *
-	 * @var bool
+	 * @todo		Remove in version 3.3+.
+	 * @deprecated	3.2.2
+	 * @var 		bool
 	 */
 	protected $log_query = FALSE;
 
@@ -89,7 +91,9 @@ class Crud extends \CI_Model {
 	 * 	[TABLENAME]_update_date	datetime 	DEFAULT NULL;
 	 * 	[TABLENAME]_update_ip	varchar(15)	DEFAULT NULL;
 	 *
-	 * @var bool
+	 * @todo		Remove in version 3.3+.
+	 * @deprecated	3.2.2
+	 * @var 		bool
 	 */
 	protected $track_trans = FALSE;
 
@@ -171,7 +175,12 @@ class Crud extends \CI_Model {
 			$this->set_insert_id($start);
 			$this->set_insert_ids($start, $end);
 		}
-		if ($this->log_query === TRUE) { $this->log($this->db->last_query()); }
+		if ($this->log_query === TRUE) {
+			$track_trans = $this->track_trans;
+			$this->track_trans = FALSE;
+			$this->log($this->createDataQuery($table, $data));
+			$this->track_trans = $track_trans;
+		}
 		if ($callback) {
 			$error = $this->error();
 			$error['insert_id'] = $this->insert_id();
@@ -179,6 +188,41 @@ class Crud extends \CI_Model {
 			return $error;
 		}
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
+	}
+
+	/**
+	 * Create Data Query
+	 *
+	 * Compiles an insert query and returns the sql
+	 *
+	 * @param 	string 	$table
+	 * @param 	array 	$data
+	 * @return 	mixed
+	 */
+	public function createDataQuery($table, $data) {
+		if (is_array_assoc($data)) {
+			if ($this->track_trans === TRUE) {
+				$data[$table . '_create_date'] = date('Y-m-d H:i:s');
+				$data[$table . '_create_ip'] = $this->input->ip_address();
+			}
+			return $this->db->set($data)->get_compiled_insert($table);
+		}
+		else if (is_array_multi($data)) {
+			$sql = '';
+			foreach ($data as $key => $val) {
+				if ($this->track_trans === TRUE) {
+					$val[$table . '_create_date'] = date('Y-m-d H:i:s');
+					$val[$table . '_create_ip'] = $this->input->ip_address();
+				}
+				$query = $this->db->set($val)->get_compiled_insert($table);
+				if ($key > 0) {
+					$pos = strpos($query, ' VALUES ');
+					$sql .= substr_replace($query, ',', 0, $pos + 7);
+				} else { $sql .= $query; }
+			}
+			return $sql;
+		}
+		return FALSE;
 	}
 
 	/**
@@ -248,13 +292,17 @@ class Crud extends \CI_Model {
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
-		if ($this->log_query) { $this->log($this->db->last_query()); }
-		$this->group_rst();
+		if ($this->log_query === TRUE)
+			$this->log($this->readDataQuery($select, $from, $wheres, $joinTable, $groupBy, $orderBy, $limit));
+		else
+			$this->group_rst();
 		return ($this->error_message() !== '') ? FALSE: $query;
 	}
 
 	/**
-	 * Read Data Query (Show Query for debugging without execution)
+	 * Read Data Query
+	 * 
+	 * Compiles a SELECT query string and returns the sql.
 	 *
 	 * @param	string	$select
 	 * @param	mixed	$from
@@ -413,10 +461,36 @@ class Crud extends \CI_Model {
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
-		if ($this->log_query) { $this->log($this->db->last_query()); }
-		$this->group_rst();
+		if ($this->log_query === TRUE) {
+			$track_trans = $this->track_trans;
+			$this->track_trans = FALSE;
+			$this->log($this->updateDataQuery($table, $data, $wheres));
+			$this->track_trans = $track_trans;
+		} else { $this->group_rst(); }
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
+	}
+
+	/**
+	 * Update Data Query
+	 * 
+	 * Compiles an update query and returns the sql
+	 *
+	 * @param	string	$table
+	 * @param	array	$data
+	 * @param	mixed	$wheres
+	 * @return	string
+	 */
+	public function updateDataQuery($table, $data, $wheres) {
+		if (is_array_assoc($data) AND $this->track_trans === TRUE) {
+			$data[$table . '_update_date'] = date('Y-m-d H:i:s');
+			$data[$table . '_update_ip'] = $this->input->ip_address();
+		}
+		$this->db->set($data);
+		if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
+		else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
+		$this->group_rst();
+		return $this->db->get_compiled_update($table);
 	}
 
 	/**
@@ -438,10 +512,39 @@ class Crud extends \CI_Model {
 		$this->set_error($this->db->error());
 		$this->set_insert_id(0);
 		$this->set_insert_ids(0, 0);
-		if ($this->log_query) { $this->log($this->db->last_query()); }
-		$this->group_rst();
+		if ($this->log_query === TRUE)
+			$this->log($this->deleteDataQuery($table, $wheres));
+		else
+			$this->group_rst();
 		if ($callback) { return $this->error(); }
 		else { return ($this->error_message() !== '') ? FALSE: TRUE; }
+	}
+
+	/**
+	 * Delete Data Query
+	 * 
+	 * Compiles a delete query string and returns the sql
+	 *
+	 * @param	string	$table
+	 * @param	mixed	$wheres
+	 * @return	string
+	 */
+	public function deleteDataQuery($table, $wheres) {
+		if ($this->delete_record === FALSE) {
+			$track_trans = $this->track_trans;
+			$this->track_trans = FALSE;
+			$data[$table . '_delete_date'] = date('Y-m-d H:i:s');
+			$data[$table . '_delete_ip'] = $this->input->ip_address();
+			$sql = $this->updateDataQuery($table, $data, $wheres);
+			$this->track_trans = $track_trans;
+			return $sql;
+		}
+		else {
+			if (is_array_assoc($wheres)) { $this->set_wheres($wheres); }
+			else if (is_string($wheres) AND trim($wheres) !== '') { $this->db->where($wheres); }
+			$this->group_rst();
+			return $this->db->get_compiled_delete($table);
+		}
 	}
 
 	/**
@@ -591,8 +694,10 @@ class Crud extends \CI_Model {
 	/**
 	 * Log Queries
 	 *
-	 * @param	string	$var
-	 * @return	Crud
+	 * @todo		Remove in version 3.3+.
+	 * @deprecated	3.2.2
+	 * @param		string	$var
+	 * @return		Crud
 	 */
 	protected function log($var = '') { if (trim($var) !== '') { $this->db->insert('log', array('log_ip' => $this->input->ip_address(), 'log_query' => $var, 'log_url' => ( ! isset($_SERVER['REDIRECT_URL'])) ? base_url(): $_SERVER['REDIRECT_URL'], 'log_datetime' => date('Y-m-d H:i:s'))); } }
 

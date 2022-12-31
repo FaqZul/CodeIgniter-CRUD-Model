@@ -41,7 +41,7 @@ $this->crud->initialize($config);
 > **:information_source: Note**<br />
 > Most of the preferences have default values that will be used if You do not set them.
 ### Setting CRUD Preferences in a Config File
-If You prefer not to set preferences using the above method, You can instead put them into a [config file](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tree/3.2.1/config). Simply create a new file called the [crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/config/crud.php), add the $config array in that file. Then save the file at [config/crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/config/crud.php) and it will be used automatically. You will NOT need to use the `$this->crud->initialize()` method if You save Your preferences in a config file.
+If You prefer not to set preferences using the above method, You can instead put them into a [config file](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tree/3.2.2/config). Simply create a new file called the [crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/config/crud.php), add the $config array in that file. Then save the file at [config/crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/config/crud.php) and it will be used automatically. You will NOT need to use the `$this->crud->initialize()` method if You save Your preferences in a config file.
 ### CRUD Preferences
 Here is a list of all the options that can be set when using the crud class.
 
@@ -160,7 +160,7 @@ class Welcome extends CI_Controller {
 }
 ```
 > **:information_source: Note**<br />
-> Now, you can use queries JOIN, LIKE, WHERE more specific. [See ChangeLog](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/CHANGELOG.md)<br />
+> Now, you can use queries JOIN, LIKE, WHERE more specific. [See ChangeLog](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/CHANGELOG.md)<br />
 > If preference `delete_record` FALSE, automatically add `WHERE TABLENAME_delete_date IS NULL` in Your query.
 ### updateData
 ```php
@@ -245,6 +245,12 @@ class Blog_model extends Crud {
 		- insert_ids (array) - Insert ID from insert_batch.
 		- message (string) - SQL error message.
 - Return Type: mixed.
+> createDataQuery($table, $data)
+- Parameters:
+	- $table (string) - Table name.
+	- $data (array) - An associative array of field/value pairs.
+- Returns: Compiles an INSERT statement and returns it as a string.
+- Return Type: string.
 > readData($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ])
 - Parameters:
 	- $select (string) - The SELECT portion of a query.
@@ -262,6 +268,19 @@ class Blog_model extends Crud {
 	- [Custom Result Objects](https://www.codeigniter.com/userguide3/database/results.html#custom-result-objects).
 	- [Result Helper Methods](https://www.codeigniter.com/userguide3/database/results.html#result-helper-methods).
 - Return Type: [CI_DB_result](https://www.codeigniter.com/user_guide/database/results.html).
+> readDataQuery($select, $from [, $where = NULL [, $joinTable = NULL [, $groupBy = NULL [, $orderBy = NULL [, $limit = NULL ] ] ] ] ])
+- Parameters:
+	- $select (string) - The SELECT portion of a query.
+	- $from (mixed) - Table name(s); array or string.
+	- $where (mixed) - The WHERE clause; array or string.
+	- $joinTable (array) - An associative array of table/condition pairs.
+	- $groupBy (mixed) - Field(s) to group by; array or string.
+	- $orderBy (string) - Field to order by. The order requested - ASC, DESC or random.
+	- $limit (array) - Adds LIMIT and OFFSET clauses to a query. `array(10, 20)`.
+		1. Key `0` (int) - Number of rows to limit the result to.
+		2. Key `1` (int) - Number of rows to skip.
+- Returns: Compiles a SELECT statement and returns it as a string.
+- Return Type: string.
 > updateData($table, $data, $where [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
@@ -271,6 +290,13 @@ class Blog_model extends Crud {
 	- `$callback = FALSE` TRUE on success, FALSE on failure.
 	- `$callback = TRUE` error() method.
 - Return Type: mixed.
+> updateDataQuery($table, $data, $where)
+- Parameters:
+	- $table (string) - Table name.
+	- $data (array) - An associative array of field/value pairs.
+	- $where (mixed) - The WHERE clause; array or string.
+- Returns: Compiles an UPDATE statement and returns it as a string.
+- Return Type: string.
 > deleteData($table, $where [, $callback = FALSE ])
 - Parameters:
 	- $table (string) - Table name.
@@ -279,6 +305,12 @@ class Blog_model extends Crud {
 	- `$callback = FALSE` TRUE on success, FALSE on failure.
 	- `$callback = TRUE` error() method.
 - Return Type: mixed.
+> deleteDataQuery($table, $where)
+- Parameters:
+	- $table (string) - Table name.
+	- $where (mixed) - The WHERE clause; array or string.
+- Returns: Compiles a DELETE statement and returns it as a string.
+- Return Type: string.
 > error()
 - Returns:
 	- code (int) - SQL error code.
@@ -298,7 +330,7 @@ class Blog_model extends Crud {
 - Return Type: array.
 
 ## Contributing
-Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tags).
@@ -308,4 +340,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 See also the list of [contributors](https://github.com/FaqZul/CodeIgniter-CRUD-Model/contributors) who participated in this project.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/LICENSE) file for details.
