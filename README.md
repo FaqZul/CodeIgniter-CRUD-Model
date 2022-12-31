@@ -41,7 +41,7 @@ $this->crud->initialize($config);
 > **:information_source: Note**<br />
 > Most of the preferences have default values that will be used if You do not set them.
 ### Setting CRUD Preferences in a Config File
-If You prefer not to set preferences using the above method, You can instead put them into a [config file](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tree/3.2.1/config). Simply create a new file called the [crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/config/crud.php), add the $config array in that file. Then save the file at [config/crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/config/crud.php) and it will be used automatically. You will NOT need to use the `$this->crud->initialize()` method if You save Your preferences in a config file.
+If You prefer not to set preferences using the above method, You can instead put them into a [config file](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tree/3.2.2/config). Simply create a new file called the [crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/config/crud.php), add the $config array in that file. Then save the file at [config/crud.php](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/config/crud.php) and it will be used automatically. You will NOT need to use the `$this->crud->initialize()` method if You save Your preferences in a config file.
 ### CRUD Preferences
 Here is a list of all the options that can be set when using the crud class.
 
@@ -160,7 +160,7 @@ class Welcome extends CI_Controller {
 }
 ```
 > **:information_source: Note**<br />
-> Now, you can use queries JOIN, LIKE, WHERE more specific. [See ChangeLog](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/CHANGELOG.md)<br />
+> Now, you can use queries JOIN, LIKE, WHERE more specific. [See ChangeLog](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/CHANGELOG.md)<br />
 > If preference `delete_record` FALSE, automatically add `WHERE TABLENAME_delete_date IS NULL` in Your query.
 ### updateData
 ```php
@@ -330,7 +330,7 @@ class Blog_model extends Crud {
 - Return Type: array.
 
 ## Contributing
-Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/FaqZul/CodeIgniter-CRUD-Model/tags).
@@ -340,4 +340,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 See also the list of [contributors](https://github.com/FaqZul/CodeIgniter-CRUD-Model/contributors) who participated in this project.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.1/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/LICENSE) file for details.

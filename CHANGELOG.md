@@ -26,7 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Namespace for extends to the model class `FaqZul\CodeIgniter\CRUD\Model`.
 - Show Query for debugging without execution `readDataQuery(..).`
 - Query grouping.
-- [Support DataTables ~1.10](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.0/DataTables.md).
+- [Support DataTables ~1.10](https://github.com/FaqZul/CodeIgniter-CRUD-Model/blob/3.2.2/DataTables.md).
 ### Fixed
 - [Database errors are always correct](https://github.com/FaqZul/CodeIgniter-CRUD-Model/commit/0a76bf0374f6732fd05f3afdeb2f25d7b5ccc93e).
 
